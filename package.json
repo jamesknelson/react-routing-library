@@ -1,0 +1,95 @@
+{
+  "name": "react-routing-library",
+  "version": "0.15.0",
+  "description": "Concurrent routing that grows with your app.",
+  "author": "James K Nelson <james@jamesknelson.com>",
+  "license": "MIT",
+  "main": "dist/commonjs/index.js",
+  "module": "dist/es/index.js",
+  "types": "dist/types/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jamesknelson/react-routing-library.git"
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "build:commonjs": "tsc --pretty --module commonjs --outDir dist/commonjs",
+    "build:es": "tsc --pretty --module es2015 --outDir dist/es",
+    "build:types": "tsc --pretty --declaration --emitDeclarationOnly --outDir dist/types --isolatedModules false",
+    "build:umd": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=development rollup -c -o dist/umd/react-routing-library.js && rimraf dist/umd-intermediate",
+    "build:umd:min": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=production rollup -c -o dist/umd/react-routing-library.min.js && rimraf dist/umd-intermediate",
+    "build": "yarn run clean && yarn build:es && yarn build:commonjs && yarn build:types && yarn build:umd && yarn build:umd:min",
+    "build:watch": "yarn run clean && yarn build:es -- --types --watch",
+    "prepare": "yarn test && yarn build",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "history": "^5.0.0",
+    "path-to-regexp": "^6.1.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.3.2",
+    "@testing-library/react-hooks": "^3.2.1",
+    "@testing-library/user-event": "^7.1.2",
+    "@types/jest": "^24.0.0",
+    "@types/node": "^12.0.0",
+    "@types/react": "^16.9.43",
+    "@types/react-dom": "^16.9.8",
+    "@typescript-eslint/eslint-plugin": "^2.16.0",
+    "@typescript-eslint/parser": "^2.16.0",
+    "babel-eslint": "^10.0.3",
+    "cross-env": "^6.0.3",
+    "eslint": "^6.8.0",
+    "eslint-config-react-app": "^5.0.2",
+    "eslint-plugin-flowtype": "^4.6.0",
+    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.17.0",
+    "eslint-plugin-react-hooks": "^2.3.0",
+    "jest": "^24.9.0",
+    "jest-styled-components": "^7.0.2",
+    "react": "0.0.0-experimental-4c8c98ab9",
+    "react-dom": "0.0.0-experimental-4c8c98ab9",
+    "react-scripts": "3.4.1",
+    "react-test-renderer": "^16.12.0",
+    "rimraf": "^3.0.2",
+    "rollup": "^1.1.2",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-plugin-replace": "^2.1.0",
+    "rollup-plugin-terser": "^4.0.3",
+    "ts-jest": "^24.3.0",
+    "typescript": "^3.9.6"
+  },
+  "peerDependencies": {
+    "react": "^16.12.0"
+  },
+  "keywords": [
+    "react",
+    "routing",
+    "router",
+    "navigation"
+  ],
+  "jest": {
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "testEnvironment": "jsdom",
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "jsx",
+      "ts",
+      "tsx"
+    ],
+    "preset": "ts-jest",
+    "testMatch": null,
+    "globals": {
+      "ts-jest": {
+        "babelConfig": null,
+        "diagnostics": false
+      }
+    }
+  }
+}

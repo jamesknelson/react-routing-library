@@ -1,0 +1,5 @@
+.esm-cache
+node_modules
+notes
+*.log
+dist
