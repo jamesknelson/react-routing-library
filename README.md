@@ -18,6 +18,7 @@ Okay, so I dare you. Find me a concurrent-mode routing library that's easier to 
 
 Hell, find me *any* routing library that's simpler than this. I bet you can't.
 
+[Try it on CodeSandbox](https://codesandbox.io/s/react-routing-library-demo-ur9nu?file=/src/App.js)
 
 ## Your router just is a function
 
@@ -288,6 +289,9 @@ You can also access the full `response` object at `initialRoute.response` -- all
 TODO
 
 
-## Prefetching
+### Prefetching
 
 TODO
+
+
+### Page head

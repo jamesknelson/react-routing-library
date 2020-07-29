@@ -1,6 +1,6 @@
 {
   "name": "react-routing-library",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "Concurrent routing that grows with your app.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
