@@ -1,5 +1,8 @@
 .esm-cache
+.parcel-cache
+
+dist
 node_modules
 notes
+
 *.log
-dist

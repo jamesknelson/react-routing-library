@@ -8,8 +8,12 @@ export function createLazyRouter<
 >(
   load: () => PromiseLike<{ default: RouterFunction<Request, Response> }>,
 ): RouterFunction<Request, Response> {
+  let router: RouterFunction<Request, Response> | undefined
+
   return createAsyncRouter(async (request, response) => {
-    const { default: router } = await load()
+    if (!router) {
+      router = (await load()).default
+    }
     return router(request, response)
   })
 }

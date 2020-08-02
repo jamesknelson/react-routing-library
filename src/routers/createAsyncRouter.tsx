@@ -4,8 +4,7 @@ import { ReactNode } from 'react'
 import { RouterFunction, RouterRequest, RouterResponse } from '../core'
 import { isPromiseLike } from '../utils'
 
-import { memoizeRouter } from './memoizeRouter'
-import { provideRouterRequest } from './provideRouterRequest'
+import { createRouter } from './createRouter'
 
 interface ResultRef {
   current:
@@ -43,63 +42,46 @@ export function createAsyncRouter<
   Response extends RouterResponse
 >(
   asyncRouter: (request: Request, response: Response) => PromiseLike<ReactNode>,
-  getKeys?: (request: Request) => any[],
 ): RouterFunction<Request, Response> {
-  return memoizeRouter(
-    provideRouterRequest((request, response) => {
-      const promisedContent = asyncRouter(request, response)
+  return createRouter<Request, Response>((request, response) => {
+    const promisedContent = asyncRouter(request, response)
 
-      if (!isPromiseLike(promisedContent)) {
-        return promisedContent
-      }
+    if (!isPromiseLike(promisedContent)) {
+      return promisedContent
+    }
 
-      const resultRef: ResultRef = {
-        current: null,
-      }
+    const resultRef: ResultRef = {
+      current: null,
+    }
 
-      promisedContent
-        .then((value) => {
-          if (response.pending === promisedContent) {
-            delete response.pending
-          }
+    promisedContent
+      .then((value) => {
+        resultRef.current = {
+          type: 'value',
+          value,
+        }
+      })
+      .then(undefined, (error) => {
+        resultRef.current = {
+          type: 'error',
+          error,
+        }
 
-          resultRef.current = {
-            type: 'value',
-            value,
-          }
-        })
-        .then(undefined, (error) => {
-          if (response.pending === promisedContent) {
-            delete response.pending
-          }
+        response.error = error
+        response.status = 500
 
-          resultRef.current = {
-            type: 'error',
-            error,
-          }
+        console.error('An async router failed with the following error:', error)
 
-          response.error = error
-          response.status = 500
+        throw error
+      })
 
-          // TODO: find a way to invalidate the memoizer cache if an async
-          //       transformer fails.
-          console.error(
-            'An async router failed with the following error:',
-            error,
-          )
+    response.pendingSuspenses.push(promisedContent)
 
-          throw error
-        })
-
-      response.pending = promisedContent
-
-      return (
-        <AsyncContentWrapper
-          promisedContent={promisedContent}
-          resultRef={resultRef}
-        />
-      )
-    }),
-    getKeys,
-  )
+    return (
+      <AsyncContentWrapper
+        promisedContent={promisedContent}
+        resultRef={resultRef}
+      />
+    )
+  })
 }

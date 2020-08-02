@@ -1,23 +1,7 @@
 import * as React from 'react'
 import { createContext } from 'react'
 
-import { RouterCache, createRouterCache } from './cache'
-import { Route, RouterNavigation, RouterRequest } from './core'
-
-export interface RouterEnvironmentContext {
-  cache: RouterCache
-  initialRoute?: Route
-}
-
-// Export the default router context, so that it can be mutated by the
-// application.
-export const defaultRouterEnvironmentContext: RouterEnvironmentContext = {
-  cache: createRouterCache(),
-}
-
-export const RouterEnvironmentContext = createContext(
-  defaultRouterEnvironmentContext,
-)
+import { RouterNavigation, RouterRequest } from './core'
 
 export const RouterContentContext = createContext<React.ReactNode>(
   undefined as any,

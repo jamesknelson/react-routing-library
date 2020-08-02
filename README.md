@@ -51,10 +51,10 @@ export default function App() {
 
 ### Creating router functions the easy way
 
-The `createRouter()` function saves you the effort of writing long switch statements.
+The `createPatternRouter()` function saves you the effort of writing long switch statements.
 
 ```tsx
-const settingsRouter = createRouter({
+const settingsRouter = createPatternRouter({
   '/account': <AccountDetails>,
   '/users/:id': (request) => <AccountUser username={request.params.id} />
 })
@@ -63,7 +63,7 @@ const settingsRouter = createRouter({
 You can nest routers -- but you'll need to add `/*` to the end of the path to indicate that any nested path should also be matched.
 
 ```tsx
-const appRouter = createRouter({
+const appRouter = createPatternRouter({
   '/': <Landing />,
   '/settings/*': settingsRouter
 })
@@ -74,7 +74,7 @@ const appRouter = createRouter({
 You can declare redirects with `createRedirectRouter`, and React Routing Library will automatically follow them.
 
 ```tsx
-const appRouter = createRouter({
+const appRouter = createPatternRouter({
   '/new-url': <Page />,
   '/old-url': createRedirectRouter('/new-url'),
 })
@@ -126,27 +126,19 @@ function AppLayout(props) {
 
 The `createAsyncRouter()` function allows you to pass a router that returns a *promise* to its content.
 
-```js
-const userProfileRouter = createAsyncRouter(
-  async request => {
-    const profile = await fetchUserProfile(request.params.userId)
-    return <UserProfile  />
-  },
+Note that the async function will be re-run each time the request or router changes -- *including* when a hash or authentication changes, so you'll probably want to perform some sort of caching on the client side.
 
-  // If you're fetching stuff from a server, you can pass a function as a
-  // second argument which specifies the cache keys. The router will only
-  // be re-run if the next request returns different values for any of
-  // these keys.
-  request => [request.params.userId]
-)
+```js
+const userProfileRouter = createAsyncRouter(async request => {
+  const profile = await fetchUserProfile(request.params.userId, someCache)
+  return <UserProfile  />
+})
 ```
 
-Internally, this will be converted into a synchronously rendered React component that suspends until your promise is ready to go.
-
-Because of this, you'll want to wrap the route content in a `<Suspense>` component to decide what to display while the content is loading.
+The routing function produced by `createAsyncRouter()` will return a synchronously rendered React component that suspends until your promise is ready to go. Because of this, you'll want to wrap the route content in a `<Suspense>` component to decide what to display while the content is loading.
 
 ```tsx
-const appRouter = createRouter({
+const appRouter = createPatternRouter({
   '/user/:userId': userProfileRouter
 })
 
@@ -241,7 +233,7 @@ Your router is just a function mapping Requests to React Elements... and the nea
 Need your routes to behave differently based on the user's current authentication status? Just create a custom router that adds a `currentUser` object to your request -- and then use it in your routers.
 
 ```tsx
-const indexRouter = createRouter({
+const indexRouter = createPatternRouter({
   // Return a different route based on the user's login status.
   '/': (request) => request.currentUser ? <Dashboard /> : <Landing />
 })
@@ -271,13 +263,19 @@ The `getRoute` function returns a promise to a route that's ready to render.
 const initialRoute = await getRoute(router, location)
 ```
 
-You can then wrap your app element with a `<RouterEnvironment initialRoute>` element when rendering server side to ensuring that the pre-computed route is used -- and that your app renders in a single pass.
+You can then pass your initial route to the `<Router>` component to skip using the router on the first render.
 
 ```tsx
+function App(props) {
+  // ...
+
+  return (
+    <Router router={appRouter} initialRoute={props.initialRoute} />
+  )
+}
+
 ReactDOMServer.renderToString(
-  <RouterEnvironment initialRoute={initialRoute}>
-    <App />
-  </RouterEnvironment>
+  <App initialRoute={initialRoute} />
 )
 ```
 
@@ -286,12 +284,14 @@ You can also access the full `response` object at `initialRoute.response` -- all
 
 ### Not Found Boundaries
 
-TODO
+When a router returned by `createPatternRouter()` encounters a route that it doesn't understand, it'll throw a `NotFoundError`. You can use a `<NotFoundBoundary>` component to catch this error and render a 404 page until the URL changes again.
 
-
-### Prefetching
-
-TODO
-
-
-### Page head
+```tsx
+<Router router={appRouter}>
+  <AppLayout>
+    <NotFoundBoundary renderError={() => <h1>404 Not Found</h1>}>
+      <RouterContent />
+    </NotFoundBoundary>
+  </AppLayout>
+</Router>
+```

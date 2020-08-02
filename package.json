@@ -1,6 +1,6 @@
 {
   "name": "react-routing-library",
-  "version": "0.15.1",
+  "version": "0.16.0",
   "description": "Concurrent routing that grows with your app.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
@@ -50,6 +50,7 @@
     "eslint-plugin-react-hooks": "^2.3.0",
     "jest": "^24.9.0",
     "jest-styled-components": "^7.0.2",
+    "parcel": "^2.0.0-beta.1",
     "react": "0.0.0-experimental-4c8c98ab9",
     "react-dom": "0.0.0-experimental-4c8c98ab9",
     "react-scripts": "3.4.1",

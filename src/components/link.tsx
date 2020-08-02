@@ -3,13 +3,13 @@ import * as React from 'react'
 import { useNavigation } from '../hooks/useNavigation'
 
 export interface LinkProps
-  extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+  extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
   children: React.ReactNode
-  href: string
+  to: string
 }
 
 export function Link(props: LinkProps) {
-  const { children, href, ...rest } = props
+  const { children, to, ...rest } = props
 
   const { navigate } = useNavigation()
 
@@ -28,11 +28,11 @@ export function Link(props: LinkProps) {
 
     event.preventDefault()
 
-    navigate(href)
+    navigate(to)
   }
 
   return (
-    <a href={href} onClick={handleClick} {...rest}>
+    <a href={to} onClick={handleClick} {...rest}>
       {children}
     </a>
   )

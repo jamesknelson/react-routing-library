@@ -6,7 +6,7 @@ import {
   stringify as stringifyQuery,
 } from 'querystring'
 
-import { RouterCache, createRouterCache } from './cache'
+import { waitForMutablePromiseList } from './utils'
 
 import { normalizeRouter } from './routers/normalizeRouter'
 
@@ -79,23 +79,8 @@ export interface RouterRequest<S extends RouterState = RouterState> {
    */
   basename: string
 
-  /**
-   * On the client, this will always be identical unless manually overridden.
-   * On the server, this will by default be unique to specific request.
-   */
-  cache: RouterCache
-
   hash: string
 
-  /**
-   * A unique string that allows the developer to distinguish between different
-   * requests where all other parameters are identical.
-   *
-   * When navigating forward and backward within history, this will keep its
-   * value except in the case where the user navigates back to a location with
-   * a non-GET method, in which case the key stored in history will be replaced
-   * immediately after route finishes loading.
-   */
   key: string
 
   method: string
@@ -121,12 +106,27 @@ export interface RouterResponse {
   // when redirecting, the redirect location is stored on the `Location` key
   headers: { [name: string]: string }
 
-  // allows a planned `routeLazy` component to tell the router that there's
-  // more content on the way
-  pending?: PromiseLike<any>
+  /**
+   * Allows a router to indicate that the content may not yet have been
+   * committed to the DOM, and this if interaction with the DOM is required,
+   * the router should wait until these promises are resolved.
+   *
+   * Note that this array can be mutated, so once the known promises are
+   * resolved, you should always check if any more promises have been added.
+   */
+  pendingCommits: PromiseLike<any>[]
+
+  /**
+   * Allows a router to indicate that the content will currently suspend,
+   * and if it is undesirable to render suspending content, the router should
+   * wait until there are no more pending promises.
+   *
+   * Note that this array can be mutated, so once the known promises are
+   * resolved, you should always check if any more promises have been added.
+   */
+  pendingSuspenses: PromiseLike<any>[]
 
   // can be used to specify redirects, not found, etc.
-  // for pending, use a 202 status
   status?: number
 }
 
@@ -139,13 +139,10 @@ export interface Route<
   response: Response
 }
 
-export interface GetRouteOptions<
-  S extends RouterState,
-  Response extends RouterResponse = RouterResponse
-> {
+export interface GetRouteOptions<S extends RouterState> {
   actionType?: RouterActionType
   basename?: string
-  cache?: RouterCache
+  followRedirects?: boolean
   history?: History<S>
   maxRedirects?: number
   method?: string
@@ -158,7 +155,7 @@ export async function getRoute<
 >(
   router: RouterFunction<RouterRequest<S>, Response>,
   location: string | RouterDelta<S>,
-  options: GetRouteOptions<S, Response> = {},
+  options: GetRouteOptions<S> = {},
 ): Promise<Route<S, Response>> {
   const generator = generateSyncRoutes(router, parseLocation(location), options)
 
@@ -167,10 +164,7 @@ export async function getRoute<
     const item = generator.next()
     if (item.done) break
     route = item.value
-    if (route.response.pending) {
-      await route.response.pending
-      delete route.response.pending
-    }
+    await waitForMutablePromiseList(route.response.pendingSuspenses)
   }
   return route!
 }
@@ -181,12 +175,12 @@ export function* generateSyncRoutes<
 >(
   _router: RouterFunction<RouterRequest<S>, Response>,
   location: RouterLocation<S>,
-  options: GetRouteOptions<S, Response>,
+  options: GetRouteOptions<S>,
 ): Generator<Route<S, Response>> {
   const {
     actionType = 'pop',
     basename = '',
-    cache = createRouterCache(),
+    followRedirects = false,
     history = createMemoryHistory(),
     maxRedirects = 5,
     method = 'GET',
@@ -213,7 +207,6 @@ export function* generateSyncRoutes<
 
   let request: RouterRequest<S> = {
     basename,
-    cache,
     key,
     method,
     params: {},
@@ -226,7 +219,10 @@ export function* generateSyncRoutes<
 
   while (
     !response ||
-    (response.status && response.status >= 300 && response.status < 400)
+    (followRedirects &&
+      response.status &&
+      response.status >= 300 &&
+      response.status < 400)
   ) {
     if (response) {
       if (++redirectCounter > maxRedirects) {
@@ -248,13 +244,14 @@ export function* generateSyncRoutes<
       request = {
         ...request,
         ...parseLocation(redirectTo),
-        key,
       }
     }
 
     response = ({
       head: [],
       headers: {},
+      pendingCommits: [],
+      pendingSuspenses: [],
     } as any) as Response
 
     content = router(request, response)

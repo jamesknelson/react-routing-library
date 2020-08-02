@@ -3,17 +3,9 @@
 
 import { History, createBrowserHistory } from 'history'
 import * as React from 'react'
-import {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { RouterCache } from '../cache'
-import { RouterEnvironmentContext, RouterProvider } from '../context'
+import { RouterProvider } from '../context'
 import {
   Route,
   RouterFunction,
@@ -28,7 +20,7 @@ import {
   getRoute,
   parseDelta,
 } from '../core'
-import { Deferred } from '../utils'
+import { Deferred, waitForMutablePromiseList } from '../utils'
 
 const DefaultTransitionTimeoutMs = 3000
 
@@ -37,7 +29,6 @@ export interface UseRouterOptions<
   Response extends RouterResponse = RouterResponse
 > {
   basename?: string
-  cache?: RouterCache
 
   /**
    * If provided, this will be used until an effect is able to be run. This
@@ -48,10 +39,9 @@ export interface UseRouterOptions<
   locationReducer?: RouterLocationReducer<State>
 
   /**
-   * Called when a response has completed rendered. This is useful for updating
-   * the document title, head, etc.
+   * Called when a complete response object becomes available.
    */
-  onAfterResponseRendered?: (
+  onResponseComplete?: (
     response: Response,
     request: RouterRequest<State>,
   ) => void
@@ -98,13 +88,10 @@ export function useRouter<
   router: RouterFunction<RouterRequest<S>, Response>,
   options: UseRouterOptions<S, Response> = {},
 ): readonly [UseRouterOutput<S>, RouterNavigation<S, Response>] {
-  const environmentContext = useContext(RouterEnvironmentContext)
-
   const {
     basename = '',
-    cache = environmentContext.cache,
-    initialRoute = environmentContext.initialRoute as Route<S, Response>,
-    onAfterResponseRendered,
+    initialRoute,
+    onResponseComplete,
     locationReducer = defaultLocationReducer as RouterLocationReducer<S>,
     transitionTimeoutMs = DefaultTransitionTimeoutMs,
     unstable_concurrentMode,
@@ -121,7 +108,7 @@ export function useRouter<
     return deferred.promise
   }, [])
 
-  const onAfterResponseRenderedRef = useRef(onAfterResponseRendered)
+  const onResponseCompleteRef = useRef(onResponseComplete)
   const historyRef = useRef<History<S>>()
   if (!historyRef.current && !initialRoute) {
     historyRef.current = getBrowserHistory(window) as History<S>
@@ -135,7 +122,7 @@ export function useRouter<
       return Array.from(
         generateSyncRoutes(router, history.location, {
           basename,
-          cache,
+          followRedirects: true,
           history,
         }),
       ).pop()!
@@ -160,7 +147,10 @@ export function useRouter<
     const transitionCountRef = useRef(0)
     transitionRoute = useCallback(
       (route: Route<S, Response>) => {
-        if (transitionTimeoutMs === 0 || !route.response.pending) {
+        if (
+          transitionTimeoutMs === 0 ||
+          !route.response.pendingSuspenses.length
+        ) {
           setRoute(route)
         } else {
           // Force a refresh to pick up our transitioning request
@@ -169,7 +159,7 @@ export function useRouter<
           const transitionCount = ++transitionCountRef.current
 
           Promise.race([
-            waitForCompleteResponse(route.response),
+            waitForMutablePromiseList(route.response.pendingSuspenses),
             new Promise((resolve) => setTimeout(resolve, transitionTimeoutMs)),
           ]).then(() => {
             if (transitionCount === transitionCountRef.current) {
@@ -201,7 +191,7 @@ export function useRouter<
           generateSyncRoutes(router, location, {
             actionType,
             basename,
-            cache,
+            followRedirects: true,
             history,
             method,
           }),
@@ -211,7 +201,7 @@ export function useRouter<
           transitionRoute(route)
         }
       }),
-    [act, basename, cache, router, transitionRoute],
+    [act, basename, router, transitionRoute],
   )
 
   // Store the base request for the prefetch action in a ref, and update it in
@@ -239,7 +229,6 @@ export function useRouter<
         const location = locationReducer(currentRequest, parseDelta(action))
         return await getRoute(router, location, {
           basename,
-          cache,
           method,
         })
       },
@@ -251,11 +240,10 @@ export function useRouter<
           locationReducer(location, parseDelta(delta)),
         ),
       reload: (): Promise<void> => {
-        cache.clear()
         return transition('replace', 'GET', (location) => location)
       },
     }),
-    [act, basename, cache, locationReducer, transition, router],
+    [act, basename, locationReducer, transition, router],
   )
 
   const initialNavigationRef = useRef(navigation)
@@ -296,17 +284,12 @@ export function useRouter<
     }
 
     async function handleResponse() {
-      // In concurrent mode, if there's a <Suspense> acting as a barrier between
-      // between an async child and the router itself, then its possible for
-      // this effect to be run before the full non-pending response is
-      // available.
-      await waitForCompleteResponse(response)
-      if (
-        !unmounted &&
-        onAfterResponseRenderedRef.current &&
-        (response.status || 200) < 300
-      ) {
-        onAfterResponseRenderedRef.current(response, request)
+      await waitForMutablePromiseList(response.pendingSuspenses)
+
+      if (!unmounted && (response.status || 200) < 300) {
+        if (onResponseCompleteRef.current) {
+          onResponseCompleteRef.current(response, request)
+        }
       }
     }
 
@@ -362,12 +345,4 @@ const getBrowserHistory: {
     getBrowserHistory.window = window
   }
   return getBrowserHistory.history
-}
-
-async function waitForCompleteResponse(response: RouterResponse) {
-  let pending: any
-  while (pending !== response.pending) {
-    pending = response.pending
-    await pending
-  }
 }

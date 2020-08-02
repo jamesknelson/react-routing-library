@@ -17,5 +17,13 @@ export function isPromiseLike(x: any): x is PromiseLike<any> {
 }
 
 export function normalizePathname(pathname: string): string {
-  return decodeURI(pathname).replace(/\/+/g, '/').normalize()
+  return decodeURI(pathname).replace(/\/+/g, '/').replace(/\/$/, '').normalize()
+}
+
+export async function waitForMutablePromiseList(promises: PromiseLike<any>[]) {
+  let count = 0
+  while (count < promises.length) {
+    await promises[count++]
+  }
+  promises.length = 0
 }
