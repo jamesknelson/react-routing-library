@@ -3,7 +3,7 @@
 </h1>
 
 <h4 align="center">
-  **Simple, powerful routing that grows with your app.**
+  Simple, powerful routing that grows with your app.
 </h4>
 
 <p align="center">
@@ -78,7 +78,7 @@ const router = createPatternRouter({
 
 Naturally, your `<Content>` element can be nested anywhere inside the routing provider. This lets you easily add layout elements, for example a site-wide navigation bar. And hey presto -- you've now built a simple app with push-state routing!
 
-[*View this example live at CodeSandbox &raquo;*]()
+[*View this example live at CodeSandbox &raquo;*](https://codesandbox.io/s/rrl-minimal-vsdsd)
 
 ```tsx
 import { Link } from 'react-routing-library'
