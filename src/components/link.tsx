@@ -1,39 +1,72 @@
 import * as React from 'react'
 
-import { useNavigation } from '../hooks/useNavigation'
+import { RouterDelta, RouterState } from '../core'
+import { useIsActive } from '../hooks/useIsActive'
+import { UseLinkOptions, useLink } from '../hooks/useLink'
 
-export interface LinkProps
-  extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
+export interface LinkProps<S extends RouterState = RouterState>
+  extends UseLinkOptions,
+    Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
+  active?: boolean
+  activeClassName?: string
+  activeStyle?: object
   children: React.ReactNode
-  to: string
+  exact?: boolean
+  ref?: React.Ref<HTMLAnchorElement>
+  to: string | RouterDelta<S>
 }
 
-export function Link(props: LinkProps) {
-  const { children, to, ...rest } = props
+// Need to include this type definition, as the automatically generated one
+// is incompatible with some versions of the react typings.
+export const Link: React.FunctionComponent<LinkProps> = React.forwardRef(
+  (props: LinkProps, anchorRef: React.Ref<HTMLAnchorElement>) => {
+    let {
+      active,
+      activeClassName = '',
+      activeStyle = {},
+      children,
+      className = '',
+      disabled,
+      exact,
+      onClick: onClickProp,
+      onMouseEnter: onMouseEnterProp,
+      prefetch,
+      replace,
+      state,
+      style = {},
+      to,
+      ...rest
+    } = props
 
-  const { navigate } = useNavigation()
+    let { onClick, onMouseEnter, href } = useLink(to, {
+      disabled,
+      onClick: onClickProp,
+      onMouseEnter: onMouseEnterProp,
+      prefetch,
+      replace,
+      state,
+    })
 
-  const handleClick = (event: React.MouseEvent) => {
-    // Don't hijack navigation when a modifier is being pressed,
-    // e.g. to open the link in a new tab
-    if (
-      event.button !== 0 ||
-      event.altKey ||
-      event.ctrlKey ||
-      event.metaKey ||
-      event.shiftKey
-    ) {
-      return
+    let actualActive = useIsActive(to, { exact: !!exact })
+    if (active === undefined) {
+      active = actualActive
     }
 
-    event.preventDefault()
-
-    navigate(to)
-  }
-
-  return (
-    <a href={to} onClick={handleClick} {...rest}>
-      {children}
-    </a>
-  )
-}
+    return (
+      <a
+        href={href}
+        children={children}
+        ref={anchorRef}
+        className={`${className} ${active ? activeClassName : ''}`}
+        style={{
+          ...style,
+          ...(active ? activeStyle : {}),
+        }}
+        {...rest}
+        // Don't handle events on links with a `target` prop.
+        onClick={props.target ? onClickProp : onClick}
+        onMouseEnter={props.target ? onMouseEnterProp : onMouseEnter}
+      />
+    )
+  },
+)

@@ -5,6 +5,8 @@ export * from './components/notFoundBoundary'
 export * from './components/router'
 export * from './components/routerContent'
 
+export * from './hooks/useIsActive'
+export * from './hooks/useLink'
 export * from './hooks/useNavigation'
 export * from './hooks/usePendingRequest'
 export * from './hooks/useRequest'

@@ -286,9 +286,14 @@ export function createHref(request: RouterDelta<any>): string {
 
 export function parseDelta<S extends RouterState = RouterState>(
   input: string | RouterDelta<S>,
+  state?: S,
 ): RouterDelta<S> {
   const delta: RouterDelta<S> =
     typeof input === 'string' ? parsePath(input) : { ...input }
+
+  if (state) {
+    delta.state = state
+  }
 
   if (delta.search) {
     if (delta.query) {
