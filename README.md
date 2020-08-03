@@ -18,10 +18,10 @@ yarn add react-routing-library
 ```
 
 - [**Read the 2-minute primer**](#2-minute-primer)
-- Why React Routing Library? *(coming soon*)*
-- [View the guided examples &raquo;](./examples)
+<!-- - Why React Routing Library? *(coming soon*)* -->
+<!-- - [View the guided examples &raquo;](./examples) -->
 - [View the API reference &raquo;](./docs/api.md)
-- Try a Real-world example on CodeSandbox &raquo; *(coming soon)*
+<!-- - Try a Real-world example on CodeSandbox &raquo; *(coming soon)* -->
 
 
 ## 2-minute primer
@@ -108,6 +108,9 @@ export default function App() {
 }
 ```
 
+<!--
+
+TODO
 
 ## Examples and guides
 
@@ -127,6 +130,8 @@ export default function App() {
 - [Animated transitions guide]()
 - [Authentication guide]()
 - [SSR guide]()
+
+-->
 
 
 ## API

@@ -52,21 +52,21 @@ This component goes at the top level of your app, configuring your app's routing
 
 #### Props
 
-- `router` - **required** - `Router`
+- `router` - **required** - [`Router`](#router)
 
   A function that returns the content for each new location that the user navigates to.
   
-  Typically, you'll use router helpers like `createPatternRouter()` to create this function.
+  Typically, you'll use router helpers like [`createPatternRouter()`](#createpatternrouter) to create this function.
 
 - `basename` - *optional* - `string`
 
-  If specified, this will be added to the `basename` property of each the router's requests - ensuring that when this string appears at the beginning of the current URL, it'll be ignored by `createPatternRouter()` and other router helpers.
+  If specified, this will be added to the `basename` property of each the router's requests - ensuring that when this string appears at the beginning of the current URL, it'll be ignored by [`createPatternRouter()`](#createpatternrouter) and other router helpers.
 
   Use this when you need to mount a RRL router under a subdirectory.
 
-- `initialRoute` - *optional* - `Route`
+- `initialRoute` - *optional* - [`Route`](#route)
 
-  If provided with a `Route` object (as returned by the promise returned by `getRoute()`), this prop will be used as the current route until the first effect is able to be run.
+  If provided with a `Route` object (as returned by the promise returned by [`getRoute()`](#getroute)), this prop will be used as the current route until the first effect is able to be run.
 
   As effects will not run during server side rendering, this is useful for SSR. This can also be used to load asynchronous routes in legacy-mode React.
   
@@ -88,7 +88,7 @@ This component goes at the top level of your app, configuring your app's routing
 
   Set this to `true` to opt into using React's concurrent mode internally for transitions (i.e. `useTransition()`). Note, this feature will only work when using React's experimental branch, and when rendering your app with `createRoot()`.
   
-  This should have no affect on the router's behavior itself, but may improve performance and allow you to use concurrent mode features like `<SuspenseList>` alongside routing components like `<Content>`.
+  This should have no affect on the router's behavior itself, but may improve performance and allow you to use concurrent mode features like `<SuspenseList>` alongside routing components like [`<Content>`](#content).
 
 
 ### `<Content>`
@@ -97,7 +97,7 @@ Renders the current route's content.
 
 This component will suspend if rendering lazy or async content that is still pending, and will throw an error if something goes wrong while loading your request's content.
 
-To access the content element directly, e.g. to create animated transitions, use the `useContent()` hook -- this component uses it internally.
+To access the content element directly, e.g. to create animated transitions, use the [`useContent()`](#usecontent) hook -- this component uses it internally.
 
 #### Examples
 
@@ -121,7 +121,7 @@ export default function App() {
 
 Renders an `<a>` element that'll update the route when clicked.
 
-To create custom link components, use the `useLink()` and `useIsActive()` hooks -- this component uses them internally.
+To create custom link components, use the [`useLink()`](#uselink) and [`useIsActive()`](#useisactive) hooks -- this component uses them internally.
 
 #### Props
 
@@ -188,7 +188,7 @@ export function AppLayout({ children }) {
 
 ### `<NotFoundBoundary>`
 
-Use this to catch any `NotFoundError` thrown your `<Content>` element, and render a user-friendly error message in its place.
+Use this to catch any [`NotFoundError`](#notfounderror) thrown within your [`<Content>`](#content) element, and render a user-friendly error message in its place.
 
 #### Props
 
@@ -224,6 +224,11 @@ export default function App() {
 ```tsx
 const contentElement = useContent()
 ```
+
+Returns the current route's content.
+
+If stored in state, the element returned by this hook will always render a tree containing the original `request`. This makes it suitable for creating animated transitions between routes.
+
 
 ### `useIsActive()`
 
@@ -351,25 +356,109 @@ Returns the [`RouterRequest`](#routerrequest) object associated with the current
 ### `createAsyncRouter()`
 
 ```tsx
-
+function createAsyncRouter(
+  asyncRouter: (request: Request, response: Response) => Promise<ReactNode>,
+)
 ```
+
+Creates a router that on *each and every* request, executes the provided asynchronous function.
+
+Keep in mind that new requests will be generated each time you update the router function (e.g. to set the request's authentication details), or when the user navigates to a different `#hash` or `?query`. Because the function can be called so frequently, it should generally cache any information fetched from your server *outside* of the router itself.
+
+Typical uses for `createAsyncRouter()` including fetching any data reference in URL parameters, so that you can call [`notFoundRouter`](#notfoundrouter) if the referenced data doesn't exist. You can also use `createAsyncRouter()` to wait for data to load when implementing SSR.
+
 
 ### `createLazyRouter()`
 
 ```tsx
-
+function createLazyRouter(
+  load: () => Promise<{ default: Router }>,
+)
 ```
+
+Like React's `lazy()` function, this helper returns a router that suspends until the promise returned by its `load()` function has resolved. Use this to implement code-splitting with dynamic `import()` at the router level.
+
+Note that the `load()` function will only ever be called once, and the result cached for future renders.
+
+#### Examples
+
+If your app has a number of large text-based pages that are infrequently viewed, e.g. including your privacy policy and terms of service, you may decide to split them out as so:
+
+```tsx
+const appRouter = createPatternRouter({
+  '/': <Home />,
+  '/pages*': createLazyRouter(() => import('./pagesRouter'))
+})
+```
+
+Then in your `pagesRouter` file, you can export a pattern router that loads the actual pages.
 
 ### `createPatternRouter()`
 
 ```tsx
-
+function createPatternRouter(
+  patterns: {
+    [pattern: string]: ReactNode | Router
+  },
+)
 ```
+
+Creates a router that switches between other routers based on the unmatched portion of the request's path.
+
+Each new request is tested against each pattern in the order given, until a matching pattern is found. If no matching pattern is found, the [`notFoundRouter`](#notfoundrouter) will be used.
+
+In addition to mapping patterns to routers, it is also possible to map patterns to React elements -- which will be returned as is.
+
+#### URL parameters
+
+You can denote URL parameters with the `:` character. These should always come after any unchanging routes that follow the same format as the pattern.
+
+```tsx
+const blogRouter = createPatternRouter({
+  '/': <BlogIndex />,
+  '/:id': (request) => <BlogPost id={request.params.id} />
+})
+```
+
+#### Nesting pattern routers
+
+You can nest routers -- but you'll need to add `/*` to the end of the path to indicate that any nested path should also be matched.
+
+```tsx
+const appRouter = createPatternRouter({
+  '/': <Landing />,
+  '/blog/*': blogRouter
+})
+```
+
+In the nested router, the `request.basename` property will be updated to include the matched portion of the pathname.
+
 
 ### `createRedirectRouter()`
 
 ```tsx
+function createRedirectRouter(
+  to:
+    | string
+    | RouterDelta<any>
+    | ((request: RouterRequest) => string | RouterDelta<any>),
+  status = 302,
+)
+```
 
+Creates a router that when matched, redirects the user to another path.
+
+The path can be specified as a bare string, or as a [`RouterDelta`](#routerdelta) object with the portions of the new URL that should differ from the matched URL.
+
+#### Examples
+
+Say you have an app with a number of steps, where each step is accessible at `/step/:number`. You'd like to make sure that if the user goes to the `/step` URL directly, they're redirected to `/step/1`.
+
+```tsx
+const stepRouter = createPatternRouter({
+  '/step/:number': req => <Step number={req.params.number} />,
+  '/step': createRedirectRouter(req => req.pathname+'/1')
+})
 ```
 
 
