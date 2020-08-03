@@ -1,19 +1,12 @@
-import {
-  RouterFunction,
-  RouterRequest,
-  RouterResponse,
-  parseDelta,
-} from '../core'
-import { normalizePathname } from '../utils'
+import { Router, RouterRequest, RouterResponse } from '../core'
+import { normalizePathname, parseDelta } from '../utils'
 
 import { createRedirectRouter } from './createRedirectRouter'
 
 export function normalizeRouter<
   Request extends RouterRequest,
   Response extends RouterResponse
->(
-  router: RouterFunction<Request, Response>,
-): RouterFunction<Request, Response> {
+>(router: Router<Request, Response>): Router<Request, Response> {
   return (request: Request, response: Response) => {
     let pathname = normalizePathname(request.pathname)
 

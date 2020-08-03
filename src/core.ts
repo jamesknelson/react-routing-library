@@ -1,16 +1,12 @@
-import { History, createMemoryHistory, parsePath } from 'history'
+import { History, createMemoryHistory } from 'history'
 import { ReactElement, ReactNode } from 'react'
-import {
-  ParsedUrlQuery,
-  parse as parseQuery,
-  stringify as stringifyQuery,
-} from 'querystring'
+import { ParsedUrlQuery, parse as parseQuery } from 'querystring'
 
-import { waitForMutablePromiseList } from './utils'
+import { parseLocation, waitForMutablePromiseList } from './utils'
 
 import { normalizeRouter } from './routers/normalizeRouter'
 
-export type RouterFunction<
+export type Router<
   Request extends RouterRequest = RouterRequest,
   Response extends RouterResponse = RouterResponse
 > = (request: Request, response: Response) => ReactNode
@@ -153,7 +149,7 @@ export async function getRoute<
   S extends RouterState = RouterState,
   Response extends RouterResponse = RouterResponse
 >(
-  router: RouterFunction<RouterRequest<S>, Response>,
+  router: Router<RouterRequest<S>, Response>,
   location: string | RouterDelta<S>,
   options: GetRouteOptions<S> = {},
 ): Promise<Route<S, Response>> {
@@ -173,7 +169,7 @@ export function* generateSyncRoutes<
   S extends RouterState = RouterState,
   Response extends RouterResponse = RouterResponse
 >(
-  _router: RouterFunction<RouterRequest<S>, Response>,
+  _router: Router<RouterRequest<S>, Response>,
   location: RouterLocation<S>,
   options: GetRouteOptions<S>,
 ): Generator<Route<S, Response>> {
@@ -276,48 +272,4 @@ function tryToNavigateAndGetKey(
   history[action](location, location.state)
   unlisten()
   return wasTransitionAllowed ? history.location.key : null
-}
-
-export function createHref(request: RouterDelta<any>): string {
-  return (
-    (request.pathname || '') + (request.search || '') + (request.hash || '')
-  )
-}
-
-export function parseDelta<S extends RouterState = RouterState>(
-  input: string | RouterDelta<S>,
-  state?: S,
-): RouterDelta<S> {
-  const delta: RouterDelta<S> =
-    typeof input === 'string' ? parsePath(input) : { ...input }
-
-  if (state) {
-    delta.state = state
-  }
-
-  if (delta.search) {
-    if (delta.query) {
-      console.error(
-        `A path was provided with both "search" and "query" parameters. Ignoring "search" in favor of "query".`,
-      )
-    } else {
-      delta.query = parseQuery(delta.search.slice(1))
-    }
-  } else if (delta.query) {
-    delta.search = stringifyQuery(delta.query)
-  }
-
-  return delta
-}
-
-export function parseLocation<S extends RouterState = RouterState>(
-  input: string | RouterDelta<S>,
-): RouterLocation<S> {
-  return {
-    hash: '',
-    pathname: '',
-    search: '',
-    state: {} as S,
-    ...parseDelta(input),
-  }
 }

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { RouterDelta, RouterState, createHref } from '../core'
-import { getDelta } from '../utils'
+import { RouterDelta, RouterState } from '../core'
+import { createHref, getDelta } from '../utils'
 
 import { useNavigation } from './useNavigation'
 import { useRequest } from './useRequest'

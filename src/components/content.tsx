@@ -3,6 +3,6 @@ import { useContext } from 'react'
 
 import { RouterContentContext } from '../context'
 
-export const RouterContent: React.SFC = () => {
+export const Content: React.SFC = () => {
   return <>{useContext(RouterContentContext)}</>
 }

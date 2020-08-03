@@ -1,13 +1,8 @@
 import * as React from 'react'
 
 import { useNavigation } from '../hooks/useNavigation'
-import {
-  RouterFunction,
-  RouterDelta,
-  RouterRequest,
-  createHref,
-  parseDelta,
-} from '../core'
+import { Router, RouterDelta, RouterRequest } from '../core'
+import { createHref, parseDelta } from '../utils'
 
 export interface RedirectProps {
   href: string
@@ -26,7 +21,7 @@ export function createRedirectRouter<
     | RouterDelta<any>
     | ((request: Request) => string | RouterDelta<any>),
   status = 302,
-): RouterFunction<Request> {
+): Router<Request> {
   return (fromRequest, response) => {
     const toRequest = parseDelta(
       typeof to === 'function' ? to(fromRequest) : to,

@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { Link, Router, RouterContent, RouterRequest } from '../../src'
+import { Content, Link, RoutingProvider, RouterRequest } from '../../src'
 
 function appRouter(req: RouterRequest) {
   switch (req.pathname) {
@@ -17,7 +17,7 @@ function appRouter(req: RouterRequest) {
 
 export function App() {
   return (
-    <Router router={appRouter} unstable_concurrentMode>
+    <RoutingProvider router={appRouter} unstable_concurrentMode>
       <nav>
         <Link to="/">Home</Link>
         &nbsp;&middot;&nbsp;
@@ -26,8 +26,8 @@ export function App() {
         <Link to="/not-found">Not Found</Link>
       </nav>
       <main>
-        <RouterContent />
+        <Content />
       </main>
-    </Router>
+    </RoutingProvider>
   )
 }

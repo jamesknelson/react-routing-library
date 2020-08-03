@@ -1,10 +1,10 @@
 import * as React from 'react'
 
 import {
+  Content,
   Link,
   NotFoundBoundary,
-  Router,
-  RouterContent,
+  RoutingProvider,
   createPatternRouter,
 } from '../../src'
 
@@ -15,7 +15,7 @@ const appRouter = createPatternRouter({
 
 export function App() {
   return (
-    <Router router={appRouter} unstable_concurrentMode>
+    <RoutingProvider router={appRouter} unstable_concurrentMode>
       <nav>
         <Link to="/">Home</Link>
         &nbsp;&middot;&nbsp;
@@ -25,9 +25,9 @@ export function App() {
       </nav>
       <main>
         <NotFoundBoundary renderError={() => <h1>404 Not Found</h1>}>
-          <RouterContent />
+          <Content />
         </NotFoundBoundary>
       </main>
-    </Router>
+    </RoutingProvider>
   )
 }

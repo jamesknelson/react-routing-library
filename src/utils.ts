@@ -1,4 +1,7 @@
-import { RouterDelta, RouterRequest, RouterState, parseDelta } from './core'
+import { parsePath } from 'history'
+import { parse as parseQuery, stringify as stringifyQuery } from 'querystring'
+
+import { RouterDelta, RouterLocation, RouterRequest, RouterState } from './core'
 
 export class Deferred<T> {
   promise: Promise<T>
@@ -12,6 +15,12 @@ export class Deferred<T> {
     })
     Object.freeze(this)
   }
+}
+
+export function createHref(request: RouterDelta<any>): string {
+  return (
+    (request.pathname || '') + (request.search || '') + (request.hash || '')
+  )
 }
 
 export function getDelta<S extends RouterState = RouterState>(
@@ -83,6 +92,44 @@ export function isPromiseLike(x: any): x is PromiseLike<any> {
 
 export function normalizePathname(pathname: string): string {
   return decodeURI(pathname).replace(/\/+/g, '/').replace(/\/$/, '').normalize()
+}
+
+export function parseDelta<S extends RouterState = RouterState>(
+  input: string | RouterDelta<S>,
+  state?: S,
+): RouterDelta<S> {
+  const delta: RouterDelta<S> =
+    typeof input === 'string' ? parsePath(input) : { ...input }
+
+  if (state) {
+    delta.state = state
+  }
+
+  if (delta.search) {
+    if (delta.query) {
+      console.error(
+        `A path was provided with both "search" and "query" parameters. Ignoring "search" in favor of "query".`,
+      )
+    } else {
+      delta.query = parseQuery(delta.search.slice(1))
+    }
+  } else if (delta.query) {
+    delta.search = stringifyQuery(delta.query)
+  }
+
+  return delta
+}
+
+export function parseLocation<S extends RouterState = RouterState>(
+  input: string | RouterDelta<S>,
+): RouterLocation<S> {
+  return {
+    hash: '',
+    pathname: '',
+    search: '',
+    state: {} as S,
+    ...parseDelta(input),
+  }
 }
 
 export async function waitForMutablePromiseList(promises: PromiseLike<any>[]) {

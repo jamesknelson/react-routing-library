@@ -3,7 +3,7 @@
 </h2>
 
 <p align="center">
-  Concurrent routing that grows with your app.
+  Routing that grows with your app.
 </p>
 
 <p align="center">
@@ -23,15 +23,15 @@ Hell, find me *any* routing library that's simpler than this. I bet you can't.
 ## Your router just is a function
 
 ```tsx
-type RouterFunction = (request, response) => ReactNode
+type Router = (request, response) => ReactNode
 ```
 
 A router just maps a request to an element. You've seen this before -- its like a React component.
 
 ```tsx
-import { Router, RouterFunction } from 'react-routing-library'
+import { Content, Router, RoutingProvider } from 'react-routing-library'
 
-const router: RouterFunction = request => {
+const router: Router = request => {
   switch (request.pathname) {
     case '/':
       return <h1>Landing</h1>
@@ -42,7 +42,11 @@ const router: RouterFunction = request => {
 }
 
 export default function App() {
-  return <Router router={router} />
+  return (
+    <RoutingProvider router={router}>
+      <Content>
+    </RoutingProvider>
+  )
 }
 ```
 
@@ -83,7 +87,7 @@ const appRouter = createPatternRouter({
 Internally, this works by setting the following properties on the response:
 
 ```tsx
-const router = (request, response) => {
+const redirectRouter = (request, response) => {
   // ...
 
   response.status = 302 // or 301
@@ -95,16 +99,16 @@ const router = (request, response) => {
 
 ### App layout and Route content
 
-The `<RouterContent />` element can be used anywhere within your `<Router>` element to render the current route's children. This comes in handy when you'd like to wrap all routes with an application-wide layout.
+The `<Content />` element that renders your current route content can be nested *anywhere* within your `<RoutingProvider>` element. This comes in handy when you'd like to wrap all routes with an application-wide layout.
 
 ```tsx
 function App() {
   return (
-    <Router router={appRouter}>
+    <RoutingProvider router={appRouter}>
       <AppLayout>
-        <RouterContent />
+        <Content />
       </AppLayout>
-    </Router>
+    </RoutingProvider>
   )
 }
 
@@ -144,13 +148,13 @@ const appRouter = createPatternRouter({
 
 function App() {
   return (
-    <Router router={appRouter}>
+    <RoutingProvider router={appRouter}>
       <AppLayout>
         <Suspense fallback={<Spinner />}>
           <RouterContent />
         </Suspense>
       </AppLayout>
-    </Router>
+    </RoutingProvider>
   )
 }
 ```
@@ -166,13 +170,13 @@ For example, you could disable the fallback completely by setting it to `Infinit
 ```tsx
 function App() {
   return (
-    <Router router={appRouter} transitionTimeoutMs={Infinity}>
+    <RoutingProvider router={appRouter} transitionTimeoutMs={Infinity}>
       <AppLayout>
         <Suspense fallback={<Spinner />}>
           <RouterContent />
         </Suspense>
       </AppLayout>
-    </Router>
+    </RoutingProvider>
   )
 }
 ```
@@ -184,14 +188,14 @@ This comes in handy for creating a generic app-wide page loading indicator.
 ```tsx
 function App() {
   return (
-    <Router router={appRouter}>
+    <RoutingProvider router={appRouter}>
       <AppLayout>
         <Suspense fallback={<Spinner />}>
           <RouterContent />
         </Suspense>
       </AppLayout>
       <AppRouteLoadingIndicator />
-    </Router>
+    </RoutingProvider>
   )
 }
 
@@ -214,14 +218,14 @@ When you render your app using `createRoot` and pass `unstable_concurrentMode` t
 ```tsx
 function App() {
   return (
-    <Router router={appRouter} unstable_concurrentMode>
+    <RoutingProvider router={appRouter} unstable_concurrentMode>
       <AppLayout>
         <Suspense fallback={null}>
           <RouterContent />
         </Suspense>
       </AppLayout>
       <AppRouteLoadingIndicator />
-    </Router>
+    </RoutingProvider>
   )
 }
 ```
@@ -244,13 +248,13 @@ function App() {
   // By using `useCallback`, this router will only be recreated when the
   // current user changes. This is important, as the <Router> component will
   // recompute the route whenever the router function changes.
-  const appRouter = useCallback<RouterFunction>(
+  const appRouter = useCallback<Router>(
     (request, response) => indexRouter({ ...request, currentUser }, response),
     [currentUser],
   )
 
   return (
-    <Router router={appRouter} />
+    <RoutingProvider router={appRouter} />
   )
 }
 ```
@@ -270,7 +274,7 @@ function App(props) {
   // ...
 
   return (
-    <Router router={appRouter} initialRoute={props.initialRoute} />
+    <RoutingProvider router={appRouter} initialRoute={props.initialRoute} />
   )
 }
 
@@ -287,11 +291,11 @@ You can also access the full `response` object at `initialRoute.response` -- all
 When a router returned by `createPatternRouter()` encounters a route that it doesn't understand, it'll throw a `NotFoundError`. You can use a `<NotFoundBoundary>` component to catch this error and render a 404 page until the URL changes again.
 
 ```tsx
-<Router router={appRouter}>
+<RoutingProvider router={appRouter}>
   <AppLayout>
     <NotFoundBoundary renderError={() => <h1>404 Not Found</h1>}>
       <RouterContent />
     </NotFoundBoundary>
   </AppLayout>
-</Router>
+</RoutingProvider>
 ```

@@ -1,9 +1,10 @@
 export * from './core'
+export { parseDelta as parse, createHref } from './utils'
 
+export * from './components/content'
 export * from './components/link'
 export * from './components/notFoundBoundary'
-export * from './components/router'
-export * from './components/routerContent'
+export * from './components/routingProvider'
 
 export * from './hooks/useIsActive'
 export * from './hooks/useLink'
@@ -14,7 +15,7 @@ export * from './hooks/useRouter'
 
 export * from './routers/createAsyncRouter'
 export * from './routers/createLazyRouter'
-export * from './routers/createRedirectRouter'
 export * from './routers/createPatternRouter'
-export * from './routers/notFoundRouter'
+export * from './routers/createRedirectRouter'
 export * from './routers/createRouter'
+export * from './routers/notFoundRouter'

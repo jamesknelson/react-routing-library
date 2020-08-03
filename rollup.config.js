@@ -4,23 +4,35 @@
 
 import * as React from 'react'
 
-import nodeResolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
+import builtins from 'rollup-plugin-node-builtins'
+import nodeResolve from 'rollup-plugin-node-resolve'
 import replace from 'rollup-plugin-replace'
 import { terser } from 'rollup-plugin-terser'
 
 const env = process.env.NODE_ENV
 const config = {
+  external: ['react'],
   input: 'dist/umd-intermediate/index.js',
   output: {
     format: 'umd',
+    globals: {
+      react: 'React',
+    },
     name: 'ReactRoutingLibrary',
   },
+  onwarn: function (warning) {
+    // Suppress warning caused by TypeScript classes using "this"
+    // https://github.com/rollup/rollup/wiki/Troubleshooting#this-is-undefined
+    if (warning.code === 'THIS_IS_UNDEFINED') {
+      return
+    }
+    console.error(warning.message)
+  },
   plugins: [
-    nodeResolve({
-      jsnext: true,
-      main: true,
-    }),
+    builtins(),
+
+    nodeResolve(),
 
     commonjs({
       namedExports: {

@@ -2,15 +2,13 @@ import * as React from 'react'
 import { useEffect } from 'react'
 
 import { RouterRequestContext } from '../context'
-import { RouterFunction, RouterRequest, RouterResponse } from '../core'
+import { Router, RouterRequest, RouterResponse } from '../core'
 import { Deferred } from '../utils'
 
 export function createRouter<
   Request extends RouterRequest,
   Response extends RouterResponse
->(
-  router: RouterFunction<Request, Response>,
-): RouterFunction<Request, Response> {
+>(router: Router<Request, Response>): Router<Request, Response> {
   return (request, response) => {
     const content = router(request, response)
     const contentPendingDeferred = new Deferred<void>()

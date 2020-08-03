@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { ReactNode } from 'react'
 
-import { RouterFunction, RouterRequest, RouterResponse } from '../core'
+import { Router, RouterRequest, RouterResponse } from '../core'
 import { isPromiseLike } from '../utils'
 
 import { createRouter } from './createRouter'
@@ -42,7 +42,7 @@ export function createAsyncRouter<
   Response extends RouterResponse
 >(
   asyncRouter: (request: Request, response: Response) => PromiseLike<ReactNode>,
-): RouterFunction<Request, Response> {
+): Router<Request, Response> {
   return createRouter<Request, Response>((request, response) => {
     const promisedContent = asyncRouter(request, response)
 

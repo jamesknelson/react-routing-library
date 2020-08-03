@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { RouterProvider } from '../context'
 import {
   Route,
-  RouterFunction,
+  Router,
   RouterActionType,
   RouterDelta,
   RouterLocation,
@@ -18,9 +18,8 @@ import {
   RouterResponse,
   generateSyncRoutes,
   getRoute,
-  parseDelta,
 } from '../core'
-import { Deferred, waitForMutablePromiseList } from '../utils'
+import { Deferred, parseDelta, waitForMutablePromiseList } from '../utils'
 
 const DefaultTransitionTimeoutMs = 3000
 
@@ -85,7 +84,7 @@ export function useRouter<
   S extends RouterState = RouterState,
   Response extends RouterResponse = RouterResponse
 >(
-  router: RouterFunction<RouterRequest<S>, Response>,
+  router: Router<RouterRequest<S>, Response>,
   options: UseRouterOptions<S, Response> = {},
 ): readonly [UseRouterOutput<S>, RouterNavigation<S, Response>] {
   const {

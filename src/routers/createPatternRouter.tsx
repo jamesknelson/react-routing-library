@@ -5,7 +5,7 @@ import {
 } from 'path-to-regexp'
 import * as React from 'react'
 
-import { RouterFunction, RouterRequest, RouterResponse } from '../core'
+import { Router, RouterRequest, RouterResponse } from '../core'
 import { normalizePathname } from '../utils'
 
 import { createRouter } from './createRouter'
@@ -15,7 +15,7 @@ export interface CreatePatternRouterOptions<
   Request extends RouterRequest,
   Response extends RouterResponse
 > {
-  [pattern: string]: React.ReactNode | RouterFunction<Request, Response>
+  [pattern: string]: React.ReactNode | Router<Request, Response>
 }
 
 export function createPatternRouter<
@@ -23,11 +23,11 @@ export function createPatternRouter<
   Response extends RouterResponse
 >(
   handlers: CreatePatternRouterOptions<Request, Response>,
-): RouterFunction<Request, Response> {
+): Router<Request, Response> {
   const tests: {
     matchFunction: MatchFunction
     pattern: string
-    router: RouterFunction<Request, Response>
+    router: Router<Request, Response>
     wildcardParamName?: string
   }[] = []
 
@@ -36,7 +36,7 @@ export function createPatternRouter<
     const handler = handlers[rawPattern]
     const router = createRouter(
       typeof handler === 'function'
-        ? (handler as RouterFunction<Request, Response>)
+        ? (handler as Router<Request, Response>)
         : () => <>{handler}</>,
     )
 

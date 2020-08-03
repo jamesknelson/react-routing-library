@@ -1,28 +1,23 @@
 import * as React from 'react'
 
 import { RouterContentContext, RouterProvider } from '../context'
-import {
-  RouterFunction,
-  RouterRequest,
-  RouterState,
-  RouterResponse,
-} from '../core'
+import { Router, RouterRequest, RouterState, RouterResponse } from '../core'
 import { UseRouterOptions, useRouter } from '../hooks/useRouter'
 
-import { RouterContent } from './routerContent'
+import { Content } from './content'
 
-export interface RouterOptions<
+export interface RoutingProviderProps<
   S extends RouterState = RouterState,
   Response extends RouterResponse = RouterResponse
 > extends UseRouterOptions<S, Response> {
   children?: React.ReactNode
-  router: RouterFunction<RouterRequest<S>, Response>
+  router: Router<RouterRequest<S>, Response>
 }
 
-export function Router<
+export function RoutingProvider<
   S extends RouterState = RouterState,
   Response extends RouterResponse = RouterResponse
->({ children, router, ...rest }: RouterOptions<S, Response>) {
+>({ children, router, ...rest }: RoutingProviderProps<S, Response>) {
   const [output, navigation] = useRouter(router, { ...rest })
   const content = output.content.props.children as React.ReactNode
   return (
@@ -31,7 +26,7 @@ export function Router<
       request={output.request}
       pendingRequest={output.pendingRequest}>
       <RouterContentContext.Provider value={content}>
-        {children === undefined ? <RouterContent /> : children}
+        {children === undefined ? <Content /> : children}
       </RouterContentContext.Provider>
     </RouterProvider>
   )

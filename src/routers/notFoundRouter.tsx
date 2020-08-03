@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { RouterFunction, RouterRequest } from '../core'
+import { Router, RouterRequest } from '../core'
 
 export class NotFoundError {
   constructor(readonly request: RouterRequest) {}
@@ -14,7 +14,7 @@ export const NotFound: React.SFC<NotFoundProps> = (props) => {
   throw props.error
 }
 
-export const notFoundRouter: RouterFunction = (request, response) => {
+export const notFoundRouter: Router = (request, response) => {
   const error = new NotFoundError(request)
 
   response.error = error

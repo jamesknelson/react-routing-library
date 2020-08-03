@@ -1,6 +1,6 @@
 {
   "name": "react-routing-library",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "Concurrent routing that grows with your app.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
@@ -26,7 +26,8 @@
   },
   "dependencies": {
     "history": "^5.0.0",
-    "path-to-regexp": "^6.1.0"
+    "path-to-regexp": "^6.1.0",
+    "querystring": "^0.2.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^4.2.4",
