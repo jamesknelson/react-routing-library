@@ -54,7 +54,7 @@
 
 ## Components
 
-### `<RoutingProvider router>`
+### `<RoutingProvider>`
 
 This component goes at the top level of your app, configuring your app's routing and providing the routing context required by all other components and hooks.
 
@@ -101,8 +101,9 @@ This component goes at the top level of your app, configuring your app's routing
 
 #### Examples
 
+TODO
 
-### `<Content />`
+### `<Content>`
 
 Renders the current route's content, as returned by the `useContent()` hook.
 
@@ -115,7 +116,7 @@ Typically, you'll want to render the content inside a component that renders any
 ```tsx
 export default function App() {
   return (
-    <RoutingProvider router={router}>
+    <RoutingProvider router={appRouter}>
       <AppLayout>
         <React.Suspense fallback={<AppSpinner />}>
           <Content />
@@ -126,7 +127,7 @@ export default function App() {
 }
 ```
 
-### `<Link to>`
+### `<Link>`
 
 Renders an `<a>` element that'll update the route when clicked.
 
@@ -174,8 +175,26 @@ Accepts most props that the standard `<a>` does, along with:
   
   In requests produced by clicking the link, this `state` will be available at `request.state`.
 
+#### Examples
 
-### `<NotFoundBoundary renderError>`
+```tsx
+export function App() {
+  return (
+    <RoutingProvider router={appRouter}>
+      <nav>
+        <Link to="/" exact activeClassName="active" prefetch="hover">Home</Link>
+        &nbsp;&middot;&nbsp;
+        <Link to="/about" activeClassName="active" prefetch="hover">About</Link>
+      </nav>
+      <main>
+        <Content />
+      </main>
+    </RoutingProvider>
+  )
+}
+```
+
+### `<NotFoundBoundary>`
 
 Use this to catch any `NotFoundError` thrown your `<Content>` element, and render a user-friendly error message in its place.
 
@@ -209,30 +228,30 @@ export default function App() {
 ## Hooks
 
 ### `useContent()`
-### `useIsActive(href, options?)`
-### `useLink(href, options?)`
+### `useIsActive()`
+### `useLink()`
 ### `useNavigation()`
 ### `usePendingRequest()`
 ### `useRequest()`
 
 ## Router helpers
 
-### `createAsyncRouter(asyncRouter)`
-### `createLazyRouter(loadRouter)`
-### `createPatternRouter(patternMap)`
-### `createRedirectRouter(redirect)`
-### `notFoundRouter`
+### `createAsyncRouter()`
+### `createLazyRouter()`
+### `createPatternRouter()`
+### `createRedirectRouter()`
 
 ## Functions
 
-### `getRoute(router, href, options?)`
+### `getRoute()`
 
-### `createHref(location)`
-### `parseHref(href, state?)`
+### `createHref()`
+### `parseHref()`
 
-## Errors
+## Error handling
 
 ### `NotFoundError`
+### `notFoundRouter`
 
 ## Types
 
