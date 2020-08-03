@@ -1,8 +1,7 @@
 import * as React from 'react'
-import { useContext } from 'react'
 
-import { RouterContentContext } from '../context'
+import { useContent } from '../hooks/useContent'
 
 export const Content: React.SFC = () => {
-  return <>{useContext(RouterContentContext)}</>
+  return <>{useContent()}</>
 }

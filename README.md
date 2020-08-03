@@ -3,299 +3,180 @@
 </h2>
 
 <p align="center">
-  Routing that grows with your app.
-</p>
-
-<p align="center">
   <a href="https://www.npmjs.com/package/react-routing-library"><img alt="NPM" src="https://img.shields.io/npm/v/react-routing-library.svg"></a>
 </p>
 
-```
+
+## Simple, powerful routing that grows with your app.
+
+```bash
 yarn add react-routing-library
 ```
 
-Okay, so I dare you. Find me a concurrent-mode routing library that's easier to get started with than React Routing Library.
+- **Why React Routing Library?** *(TODO)*
+- [View the example projects &raquo;](./examples)
+- [View the API reference &raquo;](./docs/api.md)
+- Try a Real-world example on CodeSandbox &raquo; *(TODO)*
 
-Hell, find me *any* routing library that's simpler than this. I bet you can't.
 
-[Try it on CodeSandbox](https://codesandbox.io/s/react-routing-library-demo-ur9nu?file=/src/App.js)
+## Getting Started
 
-## Your router just is a function
+**Your router just is a function.**
 
-```tsx
-type Router = (request, response) => ReactNode
+In React Routing Library, a **router** is just a function that maps a request to an element.
+
+```ts
+type Router = (request: RouterRequest) => ReactNode
 ```
 
-A router just maps a request to an element. You've seen this before -- its like a React component.
+You've seen this before -- its a lot like a React component.
 
 ```tsx
-import { Content, Router, RoutingProvider } from 'react-routing-library'
-
-const router: Router = request => {
+const router = request => {
   switch (request.pathname) {
     case '/':
-      return <h1>Landing</h1>
+      return <h1>Home</h1>
+
+    case '/about':
+      return <h1>About</h1>
 
     default:
-      return <h1>404 page is out for a walk</h1>
+      throw new Error('Not Found')
   }
 }
+```
+
+Routers-as-functions is the underlying secret that makes RRL so powerful. Most of the time though, it's easier to let RRL create router functions for you. For example, the above router could be created with `createPatternRouter()`.
+
+```tsx
+import { createPatternRouter } from 'react-routing-library'
+
+const router = createPatternRouter({
+  '/': <h1>Home</h1>,
+  '/about': <h1>About</h1>
+})
+```
+
+Once you have a router, just pass it to a `<RoutingProvider>`. Then, use a `<Content />` element to indicate where you want your content to be rendered.
+
+```tsx
+import { Content, RoutingProvider } from 'react-routing-library'
 
 export default function App() {
   return (
     <RoutingProvider router={router}>
-      <Content>
+      <Content />
     </RoutingProvider>
   )
 }
 ```
 
+Naturally, your `<Content>` element can be nested anywhere inside the routing provider. This lets you easily add layout elements, for example a site-wide navigation bar. And hey presto -- you've now built a simple app with push-state routing!
 
-## Examples
-
-### Creating router functions the easy way
-
-The `createPatternRouter()` function saves you the effort of writing long switch statements.
+[*View this example live at CodeSandbox &raquo;*]()
 
 ```tsx
-const settingsRouter = createPatternRouter({
-  '/account': <AccountDetails>,
-  '/users/:id': (request) => <AccountUser username={request.params.id} />
-})
-```
+import { Link } from 'react-routing-library'
 
-You can nest routers -- but you'll need to add `/*` to the end of the path to indicate that any nested path should also be matched.
-
-```tsx
-const appRouter = createPatternRouter({
-  '/': <Landing />,
-  '/settings/*': settingsRouter
-})
-```
-
-### Redirects
-
-You can declare redirects with `createRedirectRouter`, and React Routing Library will automatically follow them.
-
-```tsx
-const appRouter = createPatternRouter({
-  '/new-url': <Page />,
-  '/old-url': createRedirectRouter('/new-url'),
-})
-```
-
-Internally, this works by setting the following properties on the response:
-
-```tsx
-const redirectRouter = (request, response) => {
-  // ...
-
-  response.status = 302 // or 301
-  response.headers.Location = '/new-url'
-  // ...
-}
-```
-
-
-### App layout and Route content
-
-The `<Content />` element that renders your current route content can be nested *anywhere* within your `<RoutingProvider>` element. This comes in handy when you'd like to wrap all routes with an application-wide layout.
-
-```tsx
-function App() {
+function AppLayout({ children }) {
   return (
-    <RoutingProvider router={appRouter}>
+    <>
+      <header>
+        <Link to="/">Home</Link>
+        <Link to="/about">About</Link>
+      </header>
+      <main>
+        {children}
+      </main>
+    </>
+  )
+}
+
+export default function App() {
+  return (
+    <RoutingProvider router={router}>
       <AppLayout>
         <Content />
       </AppLayout>
     </RoutingProvider>
   )
 }
-
-function AppLayout(props) {
-  return (
-    <>
-      <header>
-        <nav><a href="/">Home</a></nav>
-      </header>
-      <main>
-        {props.children}
-      </main>
-    </>
-  )
-}
-```
-
-### Async routes
-
-The `createAsyncRouter()` function allows you to pass a router that returns a *promise* to its content.
-
-Note that the async function will be re-run each time the request or router changes -- *including* when a hash or authentication changes, so you'll probably want to perform some sort of caching on the client side.
-
-```js
-const userProfileRouter = createAsyncRouter(async request => {
-  const profile = await fetchUserProfile(request.params.userId, someCache)
-  return <UserProfile  />
-})
-```
-
-The routing function produced by `createAsyncRouter()` will return a synchronously rendered React component that suspends until your promise is ready to go. Because of this, you'll want to wrap the route content in a `<Suspense>` component to decide what to display while the content is loading.
-
-```tsx
-const appRouter = createPatternRouter({
-  '/user/:userId': userProfileRouter
-})
-
-function App() {
-  return (
-    <RoutingProvider router={appRouter}>
-      <AppLayout>
-        <Suspense fallback={<Spinner />}>
-          <RouterContent />
-        </Suspense>
-      </AppLayout>
-    </RoutingProvider>
-  )
-}
 ```
 
 
-### Loading indicators
+## Examples and guides
+
+- [Minimal live example]()
+- [Full real-world live example]()
+
+--- 
+
+- [Route parameters guide]()
+- [Not found boundaries guide]()
+- [Redirects guide]()
+- [Nested routers guide]()
+- [Nested layouts guide]()
+- [Concurrent mode guide]()
+- [Pre-caching data guide]()
+- [Loading indicators guide]()
+- [Animated transitions guide]()
+- [Authentication guide]()
+- [SSR guide]()
 
 
-By default, the previous route will continue to display for up to 3 seconds before a suspense is triggered to render a fallback. This can be configured with the `transitionTimeousMs` prop.
+## API
 
-For example, you could disable the fallback completely by setting it to `Infinity`.
+### Components
 
-```tsx
-function App() {
-  return (
-    <RoutingProvider router={appRouter} transitionTimeoutMs={Infinity}>
-      <AppLayout>
-        <Suspense fallback={<Spinner />}>
-          <RouterContent />
-        </Suspense>
-      </AppLayout>
-    </RoutingProvider>
-  )
-}
-```
+- `<Content>`
+- `<Link to>`
+- `<NotFoundBoundary renderError>`
+- `<RoutingProvider router initialRoute? unstable_concurrentMode?>`
 
-The `usePendingRequest()` hook allows you to check if there's a request that's been started but is not yet visible to the user.
+### Hooks
 
-This comes in handy for creating a generic app-wide page loading indicator.
+- `useContent()`
+- `useIsActive(href, options?)`
+- `useLink(href, options?)`
+- `useNavigation()`
+- `usePendingRequest()`
+- `useRequest()`
 
-```tsx
-function App() {
-  return (
-    <RoutingProvider router={appRouter}>
-      <AppLayout>
-        <Suspense fallback={<Spinner />}>
-          <RouterContent />
-        </Suspense>
-      </AppLayout>
-      <AppRouteLoadingIndicator />
-    </RoutingProvider>
-  )
-}
+### Router helpers
 
-function AppRouteLoadingIndicator() {
-  const pendingRequest = usePendingRequest()
-  return (
-    pendingRequest
-      ? <div className="AppRouteLoadingIndicator" />
-      : null
-  )
-}
-```
+- `createAsyncRouter(asyncRouter)`
+- `createLazyRouter(loadRouter)`
+- `createPatternRouter(patternMap)`
+- `createRedirectRouter(redirect)`
+- `notFoundRouter`
 
-### Concurrent mode
+### Functions
 
-*Currently only available on React's experimental branch.*
+- `getRoute(router, href, options?)`
 
-When you render your app using `createRoot` and pass `unstable_concurrentMode` to your `<Router>` component, the router will transition using `useTransition()` and its content will suspend until ready. This allows you to control fallbacks and loading order using `<Suspense>` and other concurrent-mode APIs.
+---
 
-```tsx
-function App() {
-  return (
-    <RoutingProvider router={appRouter} unstable_concurrentMode>
-      <AppLayout>
-        <Suspense fallback={null}>
-          <RouterContent />
-        </Suspense>
-      </AppLayout>
-      <AppRouteLoadingIndicator />
-    </RoutingProvider>
-  )
-}
-```
+- `createHref(location)`
+- `parseHref(href, state?)`
 
-### Authentication
+### Errors
 
-Your router is just a function mapping Requests to React Elements... and the neat thing about this is that your Request objects can be *anything you like*.
+- `NotFoundError`
 
-Need your routes to behave differently based on the user's current authentication status? Just create a custom router that adds a `currentUser` object to your request -- and then use it in your routers.
+### Types
 
-```tsx
-const indexRouter = createPatternRouter({
-  // Return a different route based on the user's login status.
-  '/': (request) => request.currentUser ? <Dashboard /> : <Landing />
-})
+- `Route`
+- `Router`
+- `RouterDelta`
+- `RouterRequest`
+- `RouterResponse`
 
-function App() {
-  const [currentUser, setCurrentUser] = useState(null)
+---
 
-  // By using `useCallback`, this router will only be recreated when the
-  // current user changes. This is important, as the <Router> component will
-  // recompute the route whenever the router function changes.
-  const appRouter = useCallback<Router>(
-    (request, response) => indexRouter({ ...request, currentUser }, response),
-    [currentUser],
-  )
-
-  return (
-    <RoutingProvider router={appRouter} />
-  )
-}
-```
-
-### SSR
-
-The `getRoute` function returns a promise to a route that's ready to render.
-
-```tsx
-const initialRoute = await getRoute(router, location)
-```
-
-You can then pass your initial route to the `<Router>` component to skip using the router on the first render.
-
-```tsx
-function App(props) {
-  // ...
-
-  return (
-    <RoutingProvider router={appRouter} initialRoute={props.initialRoute} />
-  )
-}
-
-ReactDOMServer.renderToString(
-  <App initialRoute={initialRoute} />
-)
-```
-
-You can also access the full `response` object at `initialRoute.response` -- allowing you to set headers and HTTP status codes from your router functions, and then rendering them as appropriate.
+- `GetRouteOptions`
+- `UseLinkOptions`
 
 
-### Not Found Boundaries
+## License
 
-When a router returned by `createPatternRouter()` encounters a route that it doesn't understand, it'll throw a `NotFoundError`. You can use a `<NotFoundBoundary>` component to catch this error and render a 404 page until the URL changes again.
-
-```tsx
-<RoutingProvider router={appRouter}>
-  <AppLayout>
-    <NotFoundBoundary renderError={() => <h1>404 Not Found</h1>}>
-      <RouterContent />
-    </NotFoundBoundary>
-  </AppLayout>
-</RoutingProvider>
-```
+MIT License, Copyright (c) 2020 James K. Nelson

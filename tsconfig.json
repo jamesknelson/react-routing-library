@@ -5,7 +5,6 @@
       "module": "es2015",
       "moduleResolution": "node",
       "jsx": "react",
-      "outDir": "dist/es",
       "removeComments": false,
       "sourceMap": true,
       "strictNullChecks": true,

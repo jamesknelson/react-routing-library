@@ -1,11 +1,12 @@
 export * from './core'
-export { parseDelta as parse, createHref } from './utils'
+export { parseDelta as parseHref, createHref } from './utils'
 
 export * from './components/content'
 export * from './components/link'
 export * from './components/notFoundBoundary'
 export * from './components/routingProvider'
 
+export * from './hooks/useContent'
 export * from './hooks/useIsActive'
 export * from './hooks/useLink'
 export * from './hooks/useNavigation'
