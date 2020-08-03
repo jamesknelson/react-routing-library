@@ -167,14 +167,12 @@ export default function App() {
 
 [**Types**](/docs/api.md#types)
 
-- [`GetRouteOptions`](/docs/api.md#getrouteoptions)
 - [`Route`](/docs/api.md#route)
 - [`Router`](/docs/api.md#router)
 - [`RouterDelta`](/docs/api.md#routerdelta)
 - [`RouterNavigation`](/docs/api.md#routernavigation)
 - [`RouterRequest`](/docs/api.md#routerrequest)
 - [`RouterResponse`](/docs/api.md#routerresponse)
-- [`UseLinkOptions`](/docs/api.md#uselinkoptions)
 
 
 ## License

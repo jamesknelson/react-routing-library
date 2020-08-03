@@ -36,14 +36,13 @@
 
 [**Types**](/docs/api.md#types)
 
-- [`GetRouteOptions`](/docs/api.md#getrouteoptions)
 - [`Route`](/docs/api.md#route)
 - [`Router`](/docs/api.md#router)
 - [`RouterDelta`](/docs/api.md#routerdelta)
 - [`RouterNavigation`](/docs/api.md#routernavigation)
 - [`RouterRequest`](/docs/api.md#routerrequest)
 - [`RouterResponse`](/docs/api.md#routerresponse)
-- [`UseLinkOptions`](/docs/api.md#uselinkoptions)
+
 
 ## Components
 
@@ -379,20 +378,40 @@ Returns the [`RouterRequest`](#routerrequest) object associated with the current
 ### `createHref()`
 
 ```tsx
-
+const href = createHref({ pathname, search, hash })
 ```
+
+Joins the argument URL components together into a string href.
+
 
 ### `getRoute()`
 
 ```tsx
-
+const route = await getRoute(router, href, options?)
 ```
+
+Returns a promise to a [`Route`](#route) object containing the complete content and response for the given `href`.
+
+The returned route can be passed to the `initialRoute` prop of `<RoutingProvider>` when performing Server Side Rendering. It also allows you to inspect the full [`RouterResponse`](#routerresponse) object at `route.response`, which makes it possible to to set headers/status from your routes, and implement server-side HTTP redirects.
+
+#### Options
+
+- `basename` - *optional* - `string`
+
+- `followRedirects` - *optional* - `boolean`
+
+- `method` - *optional* - `string`
+
+  *Defaults to `GET`.*`
+
 
 ### `parseHref()`
 
 ```tsx
-
+const delta = parseHref(href, state?)
 ```
+
+Takes a string or object `href`, and optionally a `state` object, and returns a [`RouterDelta`](#routerdelta) object containing the individual parts of the provided inputs.
 
 
 ## Error handling
@@ -400,64 +419,167 @@ Returns the [`RouterRequest`](#routerrequest) object associated with the current
 ### `NotFoundError`
 
 ```tsx
+import { NotFoundError } from 'react-routing-library'
 
+const error = new NotFoundError(request)
+
+error.request // returns a RouterRequest
 ```
+
+This is the error thrown by `createPatternRouter()` when it can't match a URL, and the error which `<NotFoundBoundary>` looks for to render a not found page.
+
+You can catch this error in your own components if you'd like to implement custom behavior for not found errors.
 
 ### `notFoundRouter`
 
 ```tsx
-
+import { notFoundRouter } from 'react-routing-library'
 ```
+
+This is a router function that will always render a component that throws a `NotFoundError`. You can conditionally call this router function in your own routers if you'd like to conditionally throw a not found error.
 
 
 ## Types
 
 RRL is built with TypeScript. It exports the following types for public use.
 
-### `GetRouteOptions`
-
-```tsx
-
-```
-
 ### `Route`
 
-```tsx
+The object returned by [`getRoute()`](#getroute), and accepted as the `initialRoute` prop of `<RoutingProvider>`.e
 
+```tsx
+interface Route {
+  content: ReactNode
+  request: RouterRequest
+  response: Response
+}
 ```
+
 
 ### `Router`
 
-```tsx
+A function that maps a [`RouterRequest`](#routerrequest) to a React element, and optionally may mutate the response object.
 
+```tsx
+type Router<
+  Request extends RouterRequest = RouterRequest
+> = (request: Request, response: Response) => ReactNode
 ```
+
+Routers are generic on their Request type. This means that your app can have a custom Router/Request type that specifies information specific to your app -- for example, a `currentUser` object.
+
+```ts
+interface AppRequest extends RouterRequest {
+  currentUser: AppCurrentUser
+}
+
+type AppRouter = Router<AppRequest>
+```
+
+Bear in mind that `<RoutingProvider>` and `getRoute()` expect a base `RouterRequest` object, so you'll always want your root-level router to accept a plain `RouterRequest`. The root router can then create an extended request object, and pass it to its child router.
+
+When creating this router within a component, e.g. to access component state, you'll want to make sure to memoize it with `useCallback()` so that you're not creating a new router -- and recomputing the route -- on every render.
+
+```tsx
+const rootRouter = useCallback((request: RouterRequest, response: RouterResponse) => {
+  const appRequest: AppRequest = {
+    ...request, 
+    currentUser
+  }
+  return appRouter(appRequest, response)
+}, [currentUser])
+```
+
 
 ### `RouterDelta`
 
-```tsx
+An object used to represent a change (or *delta*) from the current path. `undefined` values represent no change from the current value.
 
+```tsx
+interface RouterDelta {
+  hash?: string
+  pathname?: string
+  query?: { [key: string]: string | string[] }
+  search?: string
+  state?: object
+}
 ```
 
 ### `RouterNavigation`
 
-```tsx
+An object providing functions to control the router programmatically.
 
+The promises returned by some functions in this object will resolve once navigation and routing has completed.
+
+```tsx
+interface RouterNavigation {
+  back(): Promise<void>
+  block(blockerFn): () => void
+  navigate(delta, options?): Promise<void>
+  prefetch(delta, options?): Promise<Route>
+  reload(): Promise<void>
+}
 ```
+
 
 ### `RouterRequest`
 
-```tsx
+An object representing a single location in your browser history, or a single server-side request.
 
+```tsx
+interface RouterRequest {
+  basename: string
+  hash: string
+  key: string
+  method: string
+  params: { [name: string]: string | string[] }
+  pathname: string
+  query: { [key: string]: string | string[] }
+  search: string
+  state: object
+}
 ```
+
+#### Query vs. Params
+
+The `query` object contains a parsed version of your URL's `search` string, i.e. the part of the URL starting at (and including) the `?` character (if it exists), and ending before any `#` characters.
+
+The `params` object contains any URL parameters parsed out of a pattern passed to `createPatternRouter()`.
+
+For example, say you have the following router:
+
+```tsx
+createPatternRouter(() => {
+  '/profile/:username': req => <Profile request={req} />
+})
+```
+
+In this case, if you navigate to `/profile/clark-kent?r=lois`, the request prop will contain the following:
+
+```ts
+props.request.params // { username: 'clark-kent' }
+props.request.query // { r: 'lois' }
+```
+
+#### Methods
+
+When doing prefetching, sometimes you'll want to take a different action to when you're loading a route for real. Because of this, requests made by a call to `prefetch()` will have a value of `HEAD` under `request.method`, while all other automatically-generated requests will have a method of `GET`.
+
+It's also possible to manually specify a method by passing a `method` option to `navigation.navigate()` or `navigation.prefetch()`. In this case, `request.method` will initially contain whatever value you passed in -- but if that request is ever revisited by navigating back/forward, it'll revert to `GET`.
+
 
 ### `RouterResponse`
 
-```tsx
+A mutable object used to pass metadata from `Router` functions to the router itself, and to the server when doing SSR.
 
-```
-
-### `UseLinkOptions`
+*You probably don't need to touch this object directly, except when passing it to the second argument of your router functions.*
 
 ```tsx
-
+interface RouterResponse {
+  error?: any
+  head: ReactElement[]
+  headers: { [name: string]: string }
+  pendingCommits: PromiseLike<any>[]
+  pendingSuspenses: PromiseLike<any>[]
+  status?: number
 ```
