@@ -1,18 +1,17 @@
-
 # API Reference
 
 [**Components**](/docs/api.md#components)
 
-- [`<RoutingProvider>`](/docs/api.md##routingprovider)
-- [`<Content>`](/docs/api.md##content)
-- [`<Link>`](/docs/api.md##link)
-- [`<NotFoundBoundary>`](/docs/api.md##notfoundboundary)
+- [`<RoutingProvider>`](/docs/api.md#routingprovider)
+- [`<Content>`](/docs/api.md#content)
+- [`<Link>`](/docs/api.md#link)
+- [`<NotFoundBoundary>`](/docs/api.md#notfoundboundary)
 
 [**Hooks**](/docs/api.md#hooks)
 
-- [`useContent()`](/docs/api.md##usecontent)
-- [`useIsActive()`](/docs/api.md##useisactive)
-- [`useLink()`](/docs/api.md##uselink)
+- [`useContent()`](/docs/api.md#usecontent)
+- [`useIsActive()`](/docs/api.md#useisactive)
+- [`useLink()`](/docs/api.md#uselink)
 - [`useNavigation()`](/docs/api.md#usenavigation)
 - [`usePendingRequest()`](/docs/api.md#usependingrequest)
 - [`useRequest()`](/docs/api.md#userequest)
@@ -26,9 +25,8 @@
 
 [**Functions**](/docs/api.md#functions)
 
-- [`getRoute()`](/docs/api.md#getroute)
-
 - [`createHref()`](/docs/api.md#createhref)
+- [`getRoute()`](/docs/api.md#getroute)
 - [`parseHref()`](/docs/api.md#parsehref)
 
 [**Error handling**](/docs/api.md#error-handling)
@@ -38,15 +36,14 @@
 
 [**Types**](/docs/api.md#types)
 
+- [`GetRouteOptions`](/docs/api.md#getrouteoptions)
 - [`Route`](/docs/api.md#route)
 - [`Router`](/docs/api.md#router)
 - [`RouterDelta`](/docs/api.md#routerdelta)
+- [`RouterNavigation`](/docs/api.md#routernavigation)
 - [`RouterRequest`](/docs/api.md#routerrequest)
 - [`RouterResponse`](/docs/api.md#routerresponse)
-
-- [`GetRouteOptions`](/docs/api.md#getrouteoptions)
 - [`UseLinkOptions`](/docs/api.md#uselinkoptions)
-
 
 ## Components
 
@@ -95,15 +92,13 @@ This component goes at the top level of your app, configuring your app's routing
   This should have no affect on the router's behavior itself, but may improve performance and allow you to use concurrent mode features like `<SuspenseList>` alongside routing components like `<Content>`.
 
 
-#### Examples
-
-TODO
-
 ### `<Content>`
 
-Renders the current route's content, as returned by the `useContent()` hook.
+Renders the current route's content.
 
 This component will suspend if rendering lazy or async content that is still pending, and will throw an error if something goes wrong while loading your request's content.
+
+To access the content element directly, e.g. to create animated transitions, use the `useContent()` hook -- this component uses it internally.
 
 #### Examples
 
@@ -126,6 +121,8 @@ export default function App() {
 ### `<Link>`
 
 Renders an `<a>` element that'll update the route when clicked.
+
+To create custom link components, use the `useLink()` and `useIsActive()` hooks -- this component uses them internally.
 
 #### Props
 
@@ -174,18 +171,18 @@ Accepts most props that the standard `<a>` does, along with:
 #### Examples
 
 ```tsx
-export function App() {
+export function AppLayout({ children }) {
   return (
-    <RoutingProvider router={appRouter}>
+    <>
       <nav>
         <Link to="/" exact activeClassName="active" prefetch="hover">Home</Link>
         &nbsp;&middot;&nbsp;
         <Link to="/about" activeClassName="active" prefetch="hover">About</Link>
       </nav>
       <main>
-        <Content />
+        {children}
       </main>
-    </RoutingProvider>
+    </>
   )
 }
 ```
@@ -224,38 +221,243 @@ export default function App() {
 ## Hooks
 
 ### `useContent()`
+
+```tsx
+const contentElement = useContent()
+```
+
 ### `useIsActive()`
+
+```tsx
+const isActive = useIsActive(href, options?)
+```
+
+Returns `true` if the current request matches the specified `href`. If an `exact` option is passed, an exact match is required. Otherwise, any child of the specified `href` will also be considered a match.
+
+#### Options
+
+- `exact` - *optional* - `boolean`
+
+  If `true`, the current route will only be considered active if it exactly matches the `href` passed as the first argument.
+
 ### `useLink()`
+
+```tsx
+const linkProps = useLink(href, options?)
+```
+
+Returns a props object that can be spread onto an `<a>` element to create links that integrate with the router.
+
+These props can also be spread onto `<button>` and other components -- just remove the `href` prop.
+
+#### Options
+
+- `disabled` - *optional* - `boolean`
+
+  If `true`, clicking the link will not result in any action being taken.
+
+- `onClick` - *optional* - `Function`
+
+- `onMouseEnter` - *optional* - `Function`
+
+- `prefetch` - *optional* - `'hover' | 'mount'`
+
+  If specified, a request with method `head` will be executed in the background when the user hovers over the link, or when the link is first mounted.
+
+  Use this to improve performance by eagerly loading lazy routes.
+
+- `replace` - *optional* - `boolean`
+
+  Specifies that instead of pushing a new entry onto the browser history, the link should replace the existing entry.
+
+- `state` - *optional* - `object`
+
+  Specifies a state object to associate with the browser history entry.
+  
+  In requests produced by clicking the link, this `state` will be available at `request.state`.
+
+#### Examples
+
+By spreading the result of `useLink()`, you can use buttons from popular frameworks like Material UI as links.
+
+```tsx
+import Button from '@material-ui/core/Button'
+import { useLink } from 'react-routing-library'
+
+export function ButtonLink({ href, onClick, onMouseEnter, ...restProps }) {
+  const linkProps = useLink(href, {
+    onClick,
+    onMouseEnter,
+  })
+
+  return (
+    <Button {...linkProps} {...restProps} />
+  )
+}
+```
+
+
 ### `useNavigation()`
+
+```tsx
+const { block, navigate, prefetch, ...other } = useNavigation()
+```
+
+Returns a [`RouterNavigation`](#routernavigation) object, which you can use to prefetch routes, block navigation, and perform programmatic navigation.
+
+
 ### `usePendingRequest()`
+
+```tsx
+const pendingRequest = usePendingRequest()
+```
+
+If a navigation action maps to a request with asynchronous content that has started loading but not yet been rendered, this will return the [`RouterRequest`](#routerrequest) object associated with action. Otherwise, it'll return `null`.
+
+#### Examples
+
+This hook is useful for rendering an app-wide loading bar at the top of your page.
+
+```tsx
+function App() {
+  return (
+    <RoutingProvider router={appRouter}>
+      <AppRouteLoadingIndicator />
+      <AppLayout>
+        <Suspense fallback={<Spinner />}>
+          <RouterContent />
+        </Suspense>
+      </AppLayout>
+    </RoutingProvider>
+  )
+}
+
+function AppRouteLoadingIndicator() {
+  const pendingRequest = usePendingRequest()
+  return pendingRequest && <div className="AppRouteLoadingIndicator" />
+}
+```
+
 ### `useRequest()`
+
+```tsx
+const request = useRequest()
+```
+
+Returns the [`RouterRequest`](#routerrequest) object associated with the current route.
+
 
 ## Router helpers
 
 ### `createAsyncRouter()`
+
+```tsx
+
+```
+
 ### `createLazyRouter()`
+
+```tsx
+
+```
+
 ### `createPatternRouter()`
+
+```tsx
+
+```
+
 ### `createRedirectRouter()`
+
+```tsx
+
+```
+
 
 ## Functions
 
+### `createHref()`
+
+```tsx
+
+```
+
 ### `getRoute()`
 
-### `createHref()`
+```tsx
+
+```
+
 ### `parseHref()`
+
+```tsx
+
+```
+
 
 ## Error handling
 
 ### `NotFoundError`
+
+```tsx
+
+```
+
 ### `notFoundRouter`
+
+```tsx
+
+```
+
 
 ## Types
 
-### `Route`
-### `Router`
-### `RouterDelta`
-### `RouterRequest`
-### `RouterResponse`
+RRL is built with TypeScript. It exports the following types for public use.
 
 ### `GetRouteOptions`
+
+```tsx
+
+```
+
+### `Route`
+
+```tsx
+
+```
+
+### `Router`
+
+```tsx
+
+```
+
+### `RouterDelta`
+
+```tsx
+
+```
+
+### `RouterNavigation`
+
+```tsx
+
+```
+
+### `RouterRequest`
+
+```tsx
+
+```
+
+### `RouterResponse`
+
+```tsx
+
+```
+
 ### `UseLinkOptions`
+
+```tsx
+
+```

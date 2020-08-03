@@ -1,29 +1,34 @@
-<h2 align="center">
+<h1 align="center">
   React Routing Library
-</h2>
+</h1>
+
+<h4 align="center">
+  **Simple, powerful routing that grows with your app.**
+</h4>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/react-routing-library"><img alt="NPM" src="https://img.shields.io/npm/v/react-routing-library.svg"></a>
 </p>
 
 
-## Simple, powerful routing that grows with your app.
+## Getting Started
 
 ```bash
 yarn add react-routing-library
 ```
 
-- **Why React Routing Library?** *(TODO)*
-- [View the example projects &raquo;](./examples)
+- [**Read the 2-minute primer**](#2-minute-primer)
+- Why React Routing Library? *(coming soon*)*
+- [View the guided examples &raquo;](./examples)
 - [View the API reference &raquo;](./docs/api.md)
-- Try a Real-world example on CodeSandbox &raquo; *(TODO)*
+- Try a Real-world example on CodeSandbox &raquo; *(coming soon)*
 
 
-## Getting Started
+## 2-minute primer
 
 **Your router just is a function.**
 
-In React Routing Library, a **router** is just a function that maps a request to an element.
+With React Routing Library, a **router** is a function that maps a request to an element.
 
 ```ts
 type Router = (request: RouterRequest) => ReactNode
@@ -46,17 +51,6 @@ const router = request => {
 }
 ```
 
-Routers-as-functions is the underlying secret that makes RRL so powerful. Most of the time though, it's easier to let RRL create router functions for you. For example, the above router could be created with `createPatternRouter()`.
-
-```tsx
-import { createPatternRouter } from 'react-routing-library'
-
-const router = createPatternRouter({
-  '/': <h1>Home</h1>,
-  '/about': <h1>About</h1>
-})
-```
-
 Once you have a router, just pass it to a `<RoutingProvider>`. Then, use a `<Content />` element to indicate where you want your content to be rendered.
 
 ```tsx
@@ -69,6 +63,17 @@ export default function App() {
     </RoutingProvider>
   )
 }
+```
+
+Routers-as-functions is the underlying secret that makes RRL so powerful. Most of the time though, it's easier to let RRL create router functions for you. For example, the above router could be created with `createPatternRouter()`.
+
+```tsx
+import { createPatternRouter } from 'react-routing-library'
+
+const router = createPatternRouter({
+  '/': <h1>Home</h1>,
+  '/about': <h1>About</h1>
+})
 ```
 
 Naturally, your `<Content>` element can be nested anywhere inside the routing provider. This lets you easily add layout elements, for example a site-wide navigation bar. And hey presto -- you've now built a simple app with push-state routing!
@@ -112,7 +117,7 @@ export default function App() {
 --- 
 
 - [Route parameters guide]()
-- [Not found boundaries guide]()
+- [Not found boundaries guide](./examples/not-found-boundary)
 - [Redirects guide]()
 - [Nested routers guide]()
 - [Nested layouts guide]()
@@ -128,16 +133,16 @@ export default function App() {
 
 [**Components**](/docs/api.md#components)
 
-- [`<RoutingProvider>`](/docs/api.md##routingprovider)
-- [`<Content>`](/docs/api.md##content)
-- [`<Link>`](/docs/api.md##link)
-- [`<NotFoundBoundary>`](/docs/api.md##notfoundboundary)
+- [`<RoutingProvider>`](/docs/api.md#routingprovider)
+- [`<Content>`](/docs/api.md#content)
+- [`<Link>`](/docs/api.md#link)
+- [`<NotFoundBoundary>`](/docs/api.md#notfoundboundary)
 
 [**Hooks**](/docs/api.md#hooks)
 
-- [`useContent()`](/docs/api.md##usecontent)
-- [`useIsActive()`](/docs/api.md##useisactive)
-- [`useLink()`](/docs/api.md##uselink)
+- [`useContent()`](/docs/api.md#usecontent)
+- [`useIsActive()`](/docs/api.md#useisactive)
+- [`useLink()`](/docs/api.md#uselink)
 - [`useNavigation()`](/docs/api.md#usenavigation)
 - [`usePendingRequest()`](/docs/api.md#usependingrequest)
 - [`useRequest()`](/docs/api.md#userequest)
@@ -151,9 +156,8 @@ export default function App() {
 
 [**Functions**](/docs/api.md#functions)
 
-- [`getRoute()`](/docs/api.md#getroute)
-
 - [`createHref()`](/docs/api.md#createhref)
+- [`getRoute()`](/docs/api.md#getroute)
 - [`parseHref()`](/docs/api.md#parsehref)
 
 [**Error handling**](/docs/api.md#error-handling)
@@ -163,16 +167,16 @@ export default function App() {
 
 [**Types**](/docs/api.md#types)
 
+- [`GetRouteOptions`](/docs/api.md#getrouteoptions)
 - [`Route`](/docs/api.md#route)
 - [`Router`](/docs/api.md#router)
 - [`RouterDelta`](/docs/api.md#routerdelta)
+- [`RouterNavigation`](/docs/api.md#routernavigation)
 - [`RouterRequest`](/docs/api.md#routerrequest)
 - [`RouterResponse`](/docs/api.md#routerresponse)
-
-- [`GetRouteOptions`](/docs/api.md#getrouteoptions)
 - [`UseLinkOptions`](/docs/api.md#uselinkoptions)
 
 
 ## License
 
-MIT License, Copyright (c) 2020 James K. Nelson
+MIT License, Copyright &copy; 2020 James K. Nelson
