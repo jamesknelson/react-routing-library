@@ -1,57 +1,55 @@
 
-# API
+# API Reference
 
-## Table Of Contents
+[**Components**](#components)
 
-### Components
+- [`<RoutingProvider>`](#routingprovider)
+- [`<Content>`](#content)
+- [`<Link>`](#link)
+- [`<NotFoundBoundary>`](#notfoundboundary)
 
-- `<RoutingProvider router initialRoute? unstable_concurrentMode?>`
-- `<Content>`
-- `<Link to>`
-- `<NotFoundBoundary renderError>`
+[**Hooks**](#hooks)
 
-### Hooks
+- [`useContent()`](#usecontent)
+- [`useIsActive()`](#useisactive)
+- [`useLink()`](#uselink)
+- [`useNavigation()`](#usenavigation)
+- [`usePendingRequest()`](#usependingrequest)
+- [`useRequest()`](#userequest)
 
-- `useContent()`
-- `useIsActive(href, options?)`
-- `useLink(href, options?)`
-- `useNavigation()`
-- `usePendingRequest()`
-- `useRequest()`
+[**Router helpers**](#router-helpers)
 
-### Router helpers
+- [`createAsyncRouter()`](#createasyncrouter)
+- [`createLazyRouter()`](#createlazyrouter)
+- [`createPatternRouter()`](#createpatternrouter)
+- [`createRedirectRouter()`](#createredirectrouter)
 
-- `createAsyncRouter(asyncRouter)`
-- `createLazyRouter(loadRouter)`
-- `createPatternRouter(patternMap)`
-- `createRedirectRouter(redirect)`
-- `notFoundRouter`
+[**Functions**](#functions)
 
-### Functions
+- [`getRoute()`](#getroute)
 
-- `getRoute(router, href, options?)`
+&nbsp;
 
----
+- [`createHref()`](#createhref)
+- [`parseHref()`](#parsehref)
 
-- `createHref(location)`
-- `parseHref(href, state?)`
+[**Error handling**](#error-handling)
 
-### Errors
+- [`NotFoundError`](#notfounderror)
+- [`notFoundRouter`](#notfoundrouter)
 
-- `NotFoundError`
+[**Types**](#types)
 
-### Types
+- [`Route`](#route)
+- [`Router`](#router)
+- [`RouterDelta`](#routerdelta)
+- [`RouterRequest`](#routerrequest)
+- [`RouterResponse`](#routerresponse)
 
-- `Route`
-- `Router`
-- `RouterDelta`
-- `RouterRequest`
-- `RouterResponse`
+&nbsp;
 
----
-
-- `GetRouteOptions`
-- `UseLinkOptions`
+- [`GetRouteOptions`](#getrouteoptions)
+- [`UseLinkOptions`](#uselinkoptions)
 
 
 ## Components
