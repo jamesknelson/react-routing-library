@@ -126,55 +126,51 @@ export default function App() {
 
 ## API
 
-### Components
+[**Components**](/docs/api.md#components)
 
-- `<Content>`
-- `<Link to>`
-- `<NotFoundBoundary renderError>`
-- `<RoutingProvider router initialRoute? unstable_concurrentMode?>`
+- [`<RoutingProvider>`](/docs/api.md##routingprovider)
+- [`<Content>`](/docs/api.md##content)
+- [`<Link>`](/docs/api.md##link)
+- [`<NotFoundBoundary>`](/docs/api.md##notfoundboundary)
 
-### Hooks
+[**Hooks**](/docs/api.md#hooks)
 
-- `useContent()`
-- `useIsActive(href, options?)`
-- `useLink(href, options?)`
-- `useNavigation()`
-- `usePendingRequest()`
-- `useRequest()`
+- [`useContent()`](/docs/api.md##usecontent)
+- [`useIsActive()`](/docs/api.md##useisactive)
+- [`useLink()`](/docs/api.md##uselink)
+- [`useNavigation()`](/docs/api.md#usenavigation)
+- [`usePendingRequest()`](/docs/api.md#usependingrequest)
+- [`useRequest()`](/docs/api.md#userequest)
 
-### Router helpers
+[**Router helpers**](/docs/api.md#router-helpers)
 
-- `createAsyncRouter(asyncRouter)`
-- `createLazyRouter(loadRouter)`
-- `createPatternRouter(patternMap)`
-- `createRedirectRouter(redirect)`
-- `notFoundRouter`
+- [`createAsyncRouter()`](/docs/api.md#createasyncrouter)
+- [`createLazyRouter()`](/docs/api.md#createlazyrouter)
+- [`createPatternRouter()`](/docs/api.md#createpatternrouter)
+- [`createRedirectRouter()`](/docs/api.md#createredirectrouter)
 
-### Functions
+[**Functions**](/docs/api.md#functions)
 
-- `getRoute(router, href, options?)`
+- [`getRoute()`](/docs/api.md#getroute)
 
----
+- [`createHref()`](/docs/api.md#createhref)
+- [`parseHref()`](/docs/api.md#parsehref)
 
-- `createHref(location)`
-- `parseHref(href, state?)`
+[**Error handling**](/docs/api.md#error-handling)
 
-### Errors
+- [`NotFoundError`](/docs/api.md#notfounderror)
+- [`notFoundRouter`](/docs/api.md#notfoundrouter)
 
-- `NotFoundError`
+[**Types**](/docs/api.md#types)
 
-### Types
+- [`Route`](/docs/api.md#route)
+- [`Router`](/docs/api.md#router)
+- [`RouterDelta`](/docs/api.md#routerdelta)
+- [`RouterRequest`](/docs/api.md#routerrequest)
+- [`RouterResponse`](/docs/api.md#routerresponse)
 
-- `Route`
-- `Router`
-- `RouterDelta`
-- `RouterRequest`
-- `RouterResponse`
-
----
-
-- `GetRouteOptions`
-- `UseLinkOptions`
+- [`GetRouteOptions`](/docs/api.md#getrouteoptions)
+- [`UseLinkOptions`](/docs/api.md#uselinkoptions)
 
 
 ## License
